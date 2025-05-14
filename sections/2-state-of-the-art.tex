@@ -82,7 +82,7 @@ such as data noise and modest accuracy, paving the way for further research.
 The approach leverages a dataset of 17,194 triplets mined from Java open-source
 projects on GitHub and Gerrit. This dataset included code review examples with
 reviewer comments and revised code. Each triplet had the structure $<m_s,
-    c_{nl}, m_r>$, where $m_s$ is a method submitted for review, $c_{nl}$ is a
+	c_{nl}, m_r>$, where $m_s$ is a method submitted for review, $c_{nl}$ is a
 reviewer’s comment in natural language recommending changes, and $m_r$ is the
 revised method that implements $c_{nl}$’s suggestions.
 %For the task of code review generation, we are only interested in $m_s$ and $c_{nl}$. 
@@ -96,22 +96,22 @@ result, any instances featuring a revised method that introduces new literals
 or identifiers are removed from the dataset reducing its scope.
 
 \begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.37\linewidth]{eg_abs}
-    \caption{Example of abstraction.}
-    \label{fig:abstraction}
-    \vspace{-0.1cm}
+	\centering
+	\includegraphics[width=0.37\linewidth]{eg_abs}
+	\caption{Example of abstraction.}
+	\label{fig:abstraction}
+	\vspace{-0.1cm}
 \end{figure}
 
 The model was evaluated using quantitative metrics and qualitative analysis:
 \begin{enumerate}
-    \item Number of perfect predictions: prediction is considered ``perfect'' if the
-          generated revised code is identical to the expected code written.
-    \item BLEU-4 score: measures the overlap between the model's output and the reference
-          revised code at the n-gram level (up to 4-grams).
-    \item Levenshtein Distance: the minimum number of token edits (insertions, deletions,
-          or substitutions) needed to transform the model's output into the reference
-          code.
+	\item Number of perfect predictions: prediction is considered ``perfect'' if the
+	      generated revised code is identical to the expected code written.
+	\item BLEU-4 score: measures the overlap between the model's output and the reference
+	      revised code at the n-gram level (up to 4-grams).
+	\item Levenshtein Distance: the minimum number of token edits (insertions, deletions,
+	      or substitutions) needed to transform the model's output into the reference
+	      code.
 \end{enumerate}
 
 %The results reveal that the reviewers comment helped a lot the model's accuracy,
@@ -165,7 +165,7 @@ technique that leverages refactoring pattern templates to identify clone
 refactoring opportunities with high accuracy. PRI achieved 94.1\% accuracy in
 identifying clone refactorings and 98.4\% in detecting inconsistencies within
 these refactorings \cite{chen:compsac2017}. Additionally, Jiantao \textit{et
-    al.} developed a tool aimed at checking consistency in design patterns, which
+	al.} developed a tool aimed at checking consistency in design patterns, which
 further supports refactoring efforts \cite{he:sere2013}.
 
 In \textit{Predicting Problematic Code Lines}, researchers focus on identifying
@@ -261,7 +261,7 @@ training phase, distinguishing it from the DL-based approaches that require
 substantial computational resources for training.
 
 The tool has been trained on the same dataset as the one from Tufano \textit{et
-    al.} \cite{tufano:icse2022} and uses the same evaluation methods. CommentFinder
+	al.} \cite{tufano:icse2022} and uses the same evaluation methods. CommentFinder
 outperformed the DL approach, achieving 32\%-51\% higher perfect predictions
 and 3\%-28\% higher BLEU scores. Additionally, CommentFinder was 49 times
 faster in computational time, taking only 4 minutes compared to 194 minutes for
@@ -342,17 +342,17 @@ improve the effectiveness of their comments and suggestions where necessary.
 % NOTE: this might be useful for us to determine which reviews are useful,
 % especially what Pangsakulyanont did (?) and maybe also Rahman
 One approach in this area involves \textit{Classifying the Usefulness of Review
-    Comments}, which determines whether a review comment is helpful to the
+	Comments}, which determines whether a review comment is helpful to the
 contributor. Hasan \etal \cite{hasan:emse2021} investigated this classification
 in an industrial setting, while Pangsakulyanont \textit{et
-    al.}\cite{pangsakulyanont:iwesep2014} explored similar techniques within
+	al.}\cite{pangsakulyanont:iwesep2014} explored similar techniques within
 open-source software environments. Additionally, Rahman \etal
 \cite{rahman:msr2017} developed a prediction model called RevHelper to assess
 comment usefulness, testing it on a dataset of 1,482 reviews and achieving an
 accuracy of 66\% in predicting whether a review comment would be useful.
 
 Another related task is \textit{Identifying Review Comments Needing Further
-    Explanations}, which focuses on identifying comments that may be unclear and
+	Explanations}, which focuses on identifying comments that may be unclear and
 thus require more detail to be fully understood by the contributor. Rahman
 \etal \cite{rahman:esem2022} addressed this challenge by analyzing review
 comments that lacked sufficient context, allowing contributors to take specific
@@ -417,27 +417,27 @@ We will delve into the specifics of each benchmark to better understand their
 design, scope, and significance.
 
 \begin{table}[ht]
-    \centering
-    \begin{tabular}{llrrl}
-        \toprule
-        \textbf{Category}     &
-        \textbf{Name}         &
-        \textbf{Release}      &
-        \textbf{\# instances} &
-        \textbf{Languages}                                                                                              \\
-        \midrule
-        Code Generation       & HumanEval \cite{chen2021}                     & 2021 & 164       & Python               \\
-                              & MultiPL-E \cite{cassano2022}                  & 2023 & 164       & 18 languages         \\
-                              & CoderEval \cite{Zhang_2024}                   & 2024 & 230 + 230 & Python + Java        \\
-        \arrayrulecolor{lightgray}\hline
-        Code Editing          & SWE-bench \cite{jimenez2024swebench}          & 2024 & 2,294     & Python               \\
-                              & DebugBench \cite{tian2024debugbench}          & 2024 & 4,253     & C++, Java and Python \\
-                              & CodeEditorBench \cite{guo2024codeeditorbench} & 2024 & 7,961     & C++, Java and Python \\
-        \arrayrulecolor{lightgray}\hline
-        Multitask             & CoderUJB \cite{zeng2024coderujb}              & 2024 & 2,239     & Java                 \\
-        \arrayrulecolor{black}\bottomrule
-    \end{tabular}
-    \caption{Benchmarks to Assess DL-based Solutions for Code-related Tasks}\label{tab:benchs}
+	\centering
+	\begin{tabular}{llrrl}
+		\toprule
+		\textbf{Category}     &
+		\textbf{Name}         &
+		\textbf{Release}      &
+		\textbf{\# instances} &
+		\textbf{Languages}                                                                                              \\
+		\midrule
+		Code Generation       & HumanEval \cite{chen2021}                     & 2021 & 164       & Python               \\
+		                      & MultiPL-E \cite{cassano2022}                  & 2023 & 164       & 18 languages         \\
+		                      & CoderEval \cite{Zhang_2024}                   & 2024 & 230 + 230 & Python + Java        \\
+		\arrayrulecolor{lightgray}\hline
+		Code Editing          & SWE-bench \cite{jimenez2024swebench}          & 2024 & 2,294     & Python               \\
+		                      & DebugBench \cite{tian2024debugbench}          & 2024 & 4,253     & C++, Java and Python \\
+		                      & CodeEditorBench \cite{guo2024codeeditorbench} & 2024 & 7,961     & C++, Java and Python \\
+		\arrayrulecolor{lightgray}\hline
+		Multitask             & CoderUJB \cite{zeng2024coderujb}              & 2024 & 2,239     & Java                 \\
+		\arrayrulecolor{black}\bottomrule
+	\end{tabular}
+	\caption{Benchmarks to Assess DL-based Solutions for Code-related Tasks}\label{tab:benchs}
 \end{table}
 
 \subsubsection{Code generation}
