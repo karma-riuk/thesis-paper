@@ -1,24 +1,32 @@
 % !TEX root = ../main.tex
 \section{CRAB: Code Review Automated Benchmark}
 
-% Start with a short summary describing the two benchmarks and their size. Then, say something like “In the next subsections we detail how we built both datasets.”.
+\subsection{Overview}
 
-\subsection{Data selection}
-
-% How we selected the projects on GitHub and the candidate PRs to consider (e.g., only projects having at least X stars, X PRs, Java/Python, only considering PRs with a single review round, etc). Justify every decision.
-
-\subsection{Review Comment Generation Benchmark}
-
-% Brief introduction.
-\subsubsection{Manual Inspection of the Code Review Comments}
-\subsubsection{Paraphrases Generation}
-\subsubsection{Manual Validation of the Paraphrases}
+In this section, we describe the construction of a high-quality Java-only dataset of code-review
+triplets. Each triplet comprises three elements: the code snapshot before the review, the natural
+language review comment and the revised code after that change has been applied. Our work supports
+two complementary benchmarks: the first is review comment generation, asks a model to predict the
+review comment given the pre-review code; the second is code refinement, a strict subset of the
+first, asks a model to generate the revised code that implements the suggestion.
 
 
-\subsection{Code Refinement Benchmark}
+We focused on Java projects and aimed for high quality over quantity. That means we only kept
+examples that are self-contained, testable, and likely to be meaningful. As a starting point, we
+used the \textit{GHS} dataset and tool introduced by Dabić \etal~\cite{Dabic:msr2021data}, which
+supports project sampling for Mining Software Repositories (MSR) studies by providing rich metadata
+for over 700,000 GitHub repositories. Their platform made it possible to filter for Java
+repositories with relevant properties like number of commits, license, and recent activity.
 
-% Brief introduction.
+This section explains how we constructed the dataset, how we defined the two benchmark tasks
+(comment generation and code refinement), and how we filtered and validated the data to ensure it’s
+useful for evaluating future models.
 
-\subsubsection{Checking Compilability and Test Suites}
 
-\subsubsection{Checking Code Coverage}
+\subsection{Data source}
+\subsection{Automated Extraction Pipeline}
+\subsection{Build, Test \& Coverage}
+\subsection{Human-in-the-Loop Validation}
+\subsection{Dataset Schema \& Serialization}
+\subsection{Dataset Statistics}
+\subsection{Summary \& Deliverables}
