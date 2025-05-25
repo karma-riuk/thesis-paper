@@ -23,10 +23,56 @@ This section explains how we constructed the dataset, how we defined the two ben
 useful for evaluating future models.
 
 
-\subsection{Data source}
+\subsection{Data Source}
+
+\subsubsection{Repository Sampling}
+
+We began by querying the \textit{GHS} dataset~\cite{Dabic:msr2021data}, a large-scale repository
+mining platform that indexes metadata for over 700,000 GitHub projects. Using the web interface at
+\url{https://seart-ghs.si.usi.ch}, we applied two simple filters:
+
+\begin{itemize}
+	\item The repository must have had at least 100 pull requests.
+	\item The date of the last commit must fall within the year 2025.
+\end{itemize}
+
+These criteria ensured that we targeted active, collaborative projects likely to have meaningful
+code review activity. We exported the matching repository list in CSV format and used it as input
+for our processing pipeline.
+
+We applied minimal filtering beyond that. A small number of repositories were manually excluded
+during processing, mostly due to extreme build times or authentication issues.
+
+\subsubsection{Pull Request Selection}
+
+For each selected repository, we searched for pull requests that reflect a clean and minimal review
+interaction. Specifically, we looked for PRs that:
+
+\begin{itemize}
+	\item Were successfully merged into the main branch.
+	\item Contain either one review comment or two, where the second is a reply from the PR author.
+\end{itemize}
+
+The goal is to capture cases where a reviewer leaves a single comment and the author either does not
+respond in writing, or replies directly within the thread — which we interpret as an acknowledgment
+of the feedback. This keeps the setup simple and avoids ambiguous review discussions.
+
+We made this design choice because we realized early on that it would be difficult to create clean
+triplets from pull requests with multiple comments. While we can always locate where each comment
+appears in the code, it's much harder to untangle which subsequent code changes correspond to which
+comment in an automatic way. This makes it challenging to extract multiple, independent \subCode,
+\revComment and \revCode triplets from a single pull request. By focusing on PRs with only one
+comment (plus an optional reply), we ensure that each PR maps to a single, self-contained instance.
+This keeps the data interpretable and makes the benchmark more reliable.
+
+Of course, even in these single-comment PRs, not all follow-up commits are guaranteed to directly
+address the reviewer’s feedback. We handle these exceptions through manual validation, as detailed
+later in Section~\ref{sec:manual-selection}.
+
 \subsection{Automated Extraction Pipeline}
 \subsection{Build, Test \& Coverage}
-\subsection{Human-in-the-Loop Validation}
+\subsection{Manual selection}
+\label{sec:manual-selection}
 \subsection{Dataset Schema \& Serialization}
 \subsection{Dataset Statistics}
 \subsection{Summary \& Deliverables}
