@@ -241,8 +241,85 @@ its presence in any of the coverage reports. However, it is ultimately up to the
 the matched coverage file corresponds to the correct subproject, as automated mapping of arbitrary
 layouts remains unreliable.
 
-\subsection{Manual selection}
+\subsection{Manual Selection}
 \label{sec:manual-selection}
+
+While the construction of the dataset is driven by automation to ensure scale and consistency, there
+remain several aspects that fundamentally depend on human judgment. One of the most important among
+these is the annotation of intent and follow-through: determining whether a reviewer’s comment
+suggests a change, and whether that change was subsequently implemented in the pull request.
+
+The first layer of this process involves evaluating the nature of the review comment itself. Not all
+comments are meant to trigger code modifications. Many comments are purely informational , offering
+optional improvements or clarifications that do not warrant actual changes. Some comments are not
+directly related to the current pull request but are instead left as notes for future work. These
+typically refer to changes that should be made after the branch has been merged with another one,
+but which cannot be carried out within the scope of the current pull request due to technical
+constraints. Others might highlight a section of code without proposing any specific action. In
+order to ensure that the dataset captures meaningful reviewer-author interactions, it is necessary
+to distinguish between comments that suggest actionable modifications and those that do not.
+
+A particularly nuanced category of comments consists of those framed as questions. While at first
+glance they may appear less directive than imperative statements, questions often carry implicit
+suggestions. These can be roughly divided into two main types. The first are rhetorical questions,
+which are generally straightforward to interpret. These tend to imply strong disapproval or an
+obvious recommendation, masked in the form of a question. For example, a reviewer might write,
+\textit{``Can you move this declaration down closer to where it's used?''} or \textit{``Isn't this
+redundant with the previous check?''} In most cases, the intent behind such comments is clear: they
+point out something that should be removed, refactored, or reconsidered.
+
+The second type of question-based comment is more difficult to classify. These are genuine
+inquiries, often posed in good faith, reflecting uncertainty or opening a discussion. They may
+express doubt about a design choice, inquire about alternative implementations, or question whether
+a particular solution addresses the intended problem. For instance, a reviewer might ask,
+\textit{“Would it make sense to use a stream here instead of a loop?”} or \textit{“What happens if
+this input is null?”} The challenge with these types of comments is that they can be interpreted in
+multiple ways. Some reviewers may expect an immediate change, while others are simply requesting
+clarification. In many cases, the boundary between suggestion and inquiry is blurry, and
+classification depends on context — including the tone of the comment, the review history, and even
+the norms of the repository or organization. As a result, the decision to treat such a comment as a
+change suggestion often comes down to the judgment of the person performing the manual annotation.
+
+Once a comment is identified as suggesting a change, the next step is to verify whether the change
+was actually implemented. This involves inspecting the commits made after the comment was posted and
+analyzing the diffs introduced. However, this is not as straightforward as it may seem. In modern
+development workflows, especially those influenced by continuous integration and continuous
+deployment (CI/CD) practices, it is common for the pull request branch to be updated with changes
+from another branch, such as \texttt{main} or \texttt{dev}, before it is merged. This is often done
+to resolve merge conflicts, bring in recent bug fixes, or ensure compatibility with the latest
+version of the codebase. While such merges are necessary from an engineering perspective, they
+introduce significant noise from the point of view of dataset construction.
+
+When another branch is merged into the pull request, it can bring in a large number of changes that
+are unrelated to the comment or even to the pull request itself. As a result, the diffs that appear
+after the comment may include modifications that are completely irrelevant to the interaction being
+studied. This creates a challenge: how can we isolate the changes that were made in response to the
+comment from the rest?
+
+To address this issue, the system incorporates a manual selection step where the user is shown the
+diffs produced after the comment and is asked to select which hunks (blocks of code changes) are
+relevant to the comment. This allows for precise filtering of the changes and helps construct a
+cleaner, more focused dataset where only the diffs that represent a response to the review comment
+are preserved.
+
+In some cases, the situation is further complicated by the proximity of changes. Even when
+irrelevant changes originate from merges or unrelated commits, they may occur in the same file or
+even in adjacent lines to the relevant ones. This results in hunks that contain both the actual
+response to the comment and unrelated code. Because the standard diff format groups nearby changes
+into a single hunk, it becomes impossible to separate them without manual intervention. To deal with
+such situations, the system provides the ability to edit the hunks directly. Users can manually trim
+the diff to retain only the portions that directly address the reviewer’s feedback, discarding the
+unrelated ones. This kind of fine-grained control is essential for preserving the integrity and
+specificity of the dataset.
+
+By performing this dual-level manual selection — first identifying whether a comment suggests a
+change, and then isolating the relevant diff hunks — the dataset maintains a high degree of
+fidelity. It captures meaningful reviewer-author interactions and filters out unrelated noise
+introduced by collaborative development practices. This ensures that the final data is not only
+accurate but also truly representative of how developers respond to feedback during the code review
+process.
+
+
 \subsection{Dataset Schema \& Serialization}
 \subsection{Dataset Statistics}
 \subsection{Summary \& Deliverables}
