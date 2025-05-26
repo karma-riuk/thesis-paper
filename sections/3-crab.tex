@@ -213,6 +213,34 @@ pass its tests.
 
 
 \subsection{Build, Test \& Coverage}
+
+Once valid pull requests have been identified and archived, each repository undergoes a process to
+verify its ability to compile, run tests, and provide code coverage information. The first step is
+to detect whether the repository contains any tests. This is done by scanning the build
+configuration file for references to common testing frameworks (e.g., JUnit, TestNG, Mockito) or
+build keywords such as \texttt{testImplementation}. In addition, certain directory structures known
+to typically contain tests, like \texttt{src/test/java}, are also considered during detection.
+
+All operations related to compilation, testing, and coverage collection are executed inside Docker
+containers to ensure both isolation and reproducibility. The system supports two types of
+containers, one for each of the two build systems currently handled: Maven and Gradle. The
+architecture is designed to be easily extensible, so support for additional build systems can be
+added with minimal effort by implementing a dedicated handler class and corresponding Docker image.
+
+To obtain code coverage information, the system first attempts to run the repository’s existing
+configuration using JaCoCo. If this fails, typically because JaCoCo is not already set up in the
+project, the system tries to inject JaCoCo configuration into the build file and then re-run the
+coverage generation. After coverage reports are generated, they are parsed to extract coverage data
+for individual files.
+
+An inherent challenge arises from the fact that many repositories include multiple subprojects,
+often organized with arbitrary directory structures. This makes it difficult to associate a given
+coverage report with a specific part of the repository. To determine whether the file that received
+the comment is covered by tests, the system extracts its fully qualified class name and searches for
+its presence in any of the coverage reports. However, it is ultimately up to the user to verify that
+the matched coverage file corresponds to the correct subproject, as automated mapping of arbitrary
+layouts remains unreliable.
+
 \subsection{Manual selection}
 \label{sec:manual-selection}
 \subsection{Dataset Schema \& Serialization}
