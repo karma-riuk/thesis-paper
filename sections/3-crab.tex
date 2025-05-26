@@ -308,8 +308,9 @@ remain several aspects that fundamentally depend on human judgment. One of the m
 these is the annotation of intent and follow-through: determining whether a reviewer’s comment
 suggests a change, and whether that change was subsequently implemented in the pull request.
 
+\subsubsection{Comment Classification}
 The first layer of this process involves evaluating the nature of the review comment itself. Not all
-comments are meant to trigger code modifications. Many comments are purely informational , offering
+comments are meant to trigger code modifications. Many comments are purely informational, offering
 optional improvements or clarifications that do not warrant actual changes. Some comments are not
 directly related to the current pull request but are instead left as notes for future work. These
 typically refer to changes that should be made after the branch has been merged with another one,
@@ -335,10 +336,11 @@ a particular solution addresses the intended problem. For instance, a reviewer m
 this input is null?”} The challenge with these types of comments is that they can be interpreted in
 multiple ways. Some reviewers may expect an immediate change, while others are simply requesting
 clarification. In many cases, the boundary between suggestion and inquiry is blurry, and
-classification depends on context — including the tone of the comment, the review history, and even
+classification depends on context: including the tone of the comment, the review history, and even
 the norms of the repository or organization. As a result, the decision to treat such a comment as a
 change suggestion often comes down to the judgment of the person performing the manual annotation.
 
+\subsubsection{Assessing Implementation of the Change}
 Once a comment is identified as suggesting a change, the next step is to verify whether the change
 was actually implemented. This involves inspecting the commits made after the comment was posted and
 analyzing the diffs introduced. However, this is not as straightforward as it may seem. In modern
@@ -354,6 +356,9 @@ are unrelated to the comment or even to the pull request itself. As a result, th
 after the comment may include modifications that are completely irrelevant to the interaction being
 studied. This creates a challenge: how can we isolate the changes that were made in response to the
 comment from the rest?
+
+
+\subsubsection{Selective Diff Curation}
 
 To address this issue, the system incorporates a manual selection step where the user is shown the
 diffs produced after the comment and is asked to select which hunks (blocks of code changes) are
@@ -378,6 +383,17 @@ introduced by collaborative development practices. This ensures that the final d
 accurate but also truly representative of how developers respond to feedback during the code review
 process.
 
+\subsubsection{Manual Selection as a Design Choice}
+
+The decision to include a manual selection step was not an afterthought, but a deliberate design
+choice. Prior work has shown that fully automated dataset construction methods often introduce a
+significant amount of noise—whether due to misclassified comments, ambiguous code changes, or
+incidental modifications unrelated to reviewer feedback. Rather than aiming for scale at the expense
+of quality, we chose to prioritize precision and relevance. By hand-picking the instances we deemed
+meaningful and representative, we ensured that the dataset would reflect true reviewer-author
+interactions, with clearly identifiable suggestions and corresponding responses. This curated
+approach allows for more reliable evaluation of models in tasks that require nuanced understanding
+of code review dynamics.
 
 \subsection{Paraphrases generation}
 \subsection{Dataset Schema \& Serialization}
