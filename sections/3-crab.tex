@@ -214,90 +214,91 @@ pass its tests.
 
 \subsection{Build, Test \& Coverage}
 
-Once valid pull requests have been identified and archived, the next step in the pipeline is to
-analyze whether the code they modify is testable and whether it has sufficient test coverage. This
-phase is essential not only for verifying that the pull request builds and functions as expected,
-but also for enabling more meaningful and flexible evaluation in the code refinement task. Previous
-approaches to evaluating model-generated code often relied on static similarity metrics such as
-CodeBLEU or exact match, which reward syntactic closeness rather than semantic equivalence. This is
-overly restrictive, as many code changes can be expressed in multiple correct and idiomatic ways
-that differ significantly in surface form.
 
-By ensuring that the code is testable and accompanied by meaningful test coverage, we enable an
-alternative evaluation method based on dynamic behavior rather than static comparison. Specifically,
-a model may generate a change in response to a reviewer comment, and the resulting code can be
-tested to confirm that it does not introduce regressions. While the absence of test failures does
-not guarantee the absolute correctness of a change, it does offer a strong signal that the
-modification is not invalid. In contrast, a failing test definitively signals that the generated
-code is incorrect.
+\subsubsection{Motivation and Purpose}
 
-This framing shifts the focus from syntactic conformity to functional acceptability, granting models
-the freedom to propose diverse solutions as long as they preserve behavioral correctness. In
-practice, this allows for a more robust and realistic assessment of machine learning systems
-designed to respond to refine code. It also broadens the scope of acceptable outputs, better
-reflecting the nature of real-world software development where stylistic preferences and
-implementation choices can vary without violating correctness.
+Ensuring that each pull request can be built, tested, and instrumented for coverage is a key step in
+constructing a dataset that goes beyond static code analysis. This phase is not just a validation
+step for technical completeness, it also lays the groundwork for more robust evaluation. The ability
+to compile and execute the code opens up the possibility of behavior-based assessment, which is
+critical when evaluating code refinement models.
 
-The first task is to determine whether the repository contains any tests at all. This is achieved by
-analyzing the repository’s build configuration file, which is typically either a \texttt{pom.xml}
-file for Maven-based projects or a \texttt{build.gradle} file for Gradle-based ones. The detection
-process involves scanning for references to well-known testing frameworks such as JUnit, TestNG, or
-Mockito, as well as keywords and patterns commonly associated with test declarations, such as
-\texttt{testImplementation} or \texttt{functionalTests}. In addition to build file analysis, the
-directory structure of the project is also inspected for conventional test folders, such as
-\texttt{src/test/java} or \texttt{test/}, which frequently indicate the presence of test cases even
-if the build file is not explicit.
+In contrast to similarity-based metrics such as CodeBLEU, which penalize variations in syntax even
+when semantics are preserved, test-based evaluation allows for multiple valid implementations to be
+accepted as long as they do not introduce regressions. While passing tests do not guarantee the
+correctness of a change, they do strongly suggest that the change is not invalid. Failing tests, on
+the other hand, clearly indicate broken behavior. This framing enables more realistic and flexible
+model evaluation, better aligned with real-world development practices.
 
-If the project appears to contain test logic, it is then compiled and tested inside a controlled
-environment. To ensure reproducibility, isolation, and a uniform execution environment across all
-repositories, all build and test operations are performed inside Docker containers. There are two
-container types, one for Maven and one for Gradle, each preconfigured with the appropriate tools and
-dependencies needed to execute a typical Java project using the corresponding build system. These
-containers encapsulate everything necessary to build and test a repository, and they help avoid
-issues arising from environmental differences, such as missing dependencies, incompatible Java
-versions, or local configuration conflicts. 
+\subsubsection{Test Detection}
 
-The architecture is deliberately modular and extensible. Each build system is handled by its own
-dedicated component, which encapsulates the logic for compiling the project, running its tests, and
-generating coverage reports. Adding support for new build systems, such as Bazel or Ant, would
-require only the implementation of a new handler class and a corresponding container image. This
-separation of concerns allows the dataset pipeline to scale to a broader set of languages and tools
-in the future without requiring invasive modifications.
+The first step is to determine whether the repository contains any form of automated
+testing. This is accomplished by scanning the build configuration files for known testing libraries
+(e.g., JUnit, TestNG, Mockito) and build system keywords such as \path{testImplementation} or
+\path{functionalTests}. In addition to static analysis of the build file, the system also
+inspects conventional test directories, such as \path{src/test/java} or \path{test/}, which
+frequently contain unit or integration tests. This dual approach increases the reliability of test
+detection across a broad set of repository structures.
 
-A central feature of this phase is the collection of code coverage information. This data is vital
-for understanding which parts of the codebase are actually exercised by tests, and in particular,
-whether the specific file or method commented on in the review is covered. The coverage analysis
-begins by attempting to run the repository’s own coverage configuration, assuming it is already set
-up to use JaCoCo, a widely used Java code coverage library. If this initial attempt fails—which is
-often the case due to the variability in open-source configurations—the system attempts to inject
-JaCoCo manually into the build process.
+\subsubsection{Execution Environment}
 
-The injection process is non-trivial. It requires parsing the build file, inserting the necessary
-plugin configurations, and re-running the test suite under the modified setup. Care is taken to
-preserve the original content of the build file and to restore it in the event of a failure. If the
-coverage generation succeeds, the resulting reports are parsed and analyzed to determine coverage at
-the file level.
+To ensure reproducibility, consistency, and isolation from the host system, all compilation and test
+operations are executed within Docker containers. Two container environments are maintained,
+corresponding to the two supported Java build systems: Maven and Gradle. Each container includes the
+necessary tools, dependencies, and environment settings to execute a typical Java project. This
+ensures that the results are not affected by host-specific variations, such as Java versions, OS
+configuration, or missing libraries.
 
-One of the major challenges in this stage stems from the structure of large repositories, many of
-which are organized as multi-module or multi-project builds. In such cases, the directory layout is
-often arbitrary, with multiple loosely connected subprojects coexisting in a single codebase. This
-makes it difficult to automatically associate a given file with the coverage report that pertains to
-it. The pipeline addresses this by using the fully qualified name of the Java class—derived from its
-package declaration and filename—and searching for it across all available coverage reports. If a
-match is found, the file is considered covered.
+The architecture is designed with extensibility in mind. Build system support is modularized so that
+new systems (such as Ant or Bazel) can be integrated by adding new handler classes and corresponding
+container definitions. This separation of concerns facilitates future expansion to accommodate more
+diverse types of software projects. Moreover, because the interface between the build system logic
+and the rest of the pipeline is language agnostic, it is hypothetically straightforward to extend
+support beyond Java and handle projects written in entirely different programming languages,
+provided suitable build and test tooling exists for them.
 
-However, this approach has its limitations. It does not guarantee that the coverage report in which
-the class appears is actually the one relevant to the subproject the file belongs to. Given the wide
-variety of repository structures and the lack of standardized conventions, reliably linking coverage
-data to the correct module or context is extremely difficult to automate. As a result, some
-ambiguity remains, and users are encouraged to manually verify the results in edge cases where
-coverage attribution may be unclear.
+\subsubsection{Coverage Generation}
 
-Despite these challenges, the build, test, and coverage phase serves a critical role in the dataset
-construction pipeline. It not only ensures that the code under review is functional and testable,
-but also provides valuable metadata about how thoroughly it is exercised by tests. This information
-is later used to assess the relevance and impact of reviewer comments, particularly in tasks where
-test coverage is a factor in determining the usefulness or appropriateness of a suggested change.
+Once a repository has been successfully built and tested, the next objective is to collect code
+coverage data. This is primarily done using JaCoCo, a widely adopted tool for Java coverage
+reporting. If the project is already configured with JaCoCo, the system attempts to run its existing
+configuration directly. If this fails, typically due to the absence of the plugin, the system attempts
+to inject JaCoCo manually into the build file, modifying the configuration to include the required
+setup for coverage generation.
+
+Care is taken to preserve the integrity of the build system: the original configuration is backed up
+and restored if the injection fails. When successful, the injected configuration allows for the
+generation of XML coverage reports, which are then parsed to extract coverage percentages for
+individual files.
+
+\subsubsection{Handling Multi-Project Repositories}
+
+A major challenge arises when dealing with large repositories that are organized into multiple
+subprojects. These may be loosely coupled, deeply nested, or follow custom directory conventions.
+Because of this structural diversity, it is difficult to reliably map a given Java file to a
+specific coverage report. To approximate this mapping, the system extracts the fully qualified class
+name of each commented file and searches for it across all available coverage files. If found, the
+file is marked as covered.
+
+This approach, while pragmatic, is not foolproof. It does not guarantee that the coverage report
+belongs to the same subproject as the file in question. Given the variability in repository layout,
+automatic resolution of this ambiguity is not feasible. Users are therefore advised to manually
+verify coverage associations in cases where accuracy is critical.
+
+\subsubsection{Enabling Flexible Evaluation}
+
+By ensuring that the code in each pull request is buildable and testable, the dataset allows for a
+richer model evaluation framework. Unlike static metrics that enforce a rigid similarity standard,
+test-based validation supports functional correctness. This means that a model can propose diverse
+implementations in response to reviewer comments, as long as the resulting code passes all tests. In
+effect, this introduces a behavior-first evaluation protocol that aligns more closely with how
+developers themselves judge correctness: not by form, but by function.
+
+In summary, this phase adds significant value to the dataset by grounding it in real, executable
+code, and by enabling flexible, semantically meaningful evaluation. Despite the technical challenges
+involved—such as inconsistent configurations, incomplete test setups, and structural complexity—this
+approach provides a much more powerful basis for training and evaluating automated code refinement
+systems.
 
 \subsection{Manual Selection}
 \label{sec:manual-selection}
