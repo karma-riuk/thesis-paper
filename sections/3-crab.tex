@@ -398,5 +398,89 @@ of code review dynamics.
 
 \subsection{Paraphrases generation}
 \subsection{Dataset Schema \& Serialization}
+
+The dataset is designed to be both expressive and flexible. Each entry represents a single pull
+request and contains a rich set of data capturing the code, the reviewer comments, the surrounding
+context, and the repository’s response.
+
+\subsubsection{Schema Overview}
+
+Each entry in the dataset encapsulates multiple layers of information. At the core is the
+\texttt{metadata} object, which includes identifying fields such as repository name, pull request
+number, and commit hashes. It also contains metadata about the PR’s outcome, such as whether the
+project built successfully, whether the file under review was covered by tests, and whether the
+comment was judged to suggest a change.
+
+The entry also stores:
+\begin{itemize}
+	\item The full set of \texttt{comments}, including body text, line ranges, and paraphrases.
+	\item The \texttt{files} affected by the pull request, each annotated with its content before
+	      and after the change, test coverage metrics, and whether it is code-related.
+	\item Two sets of \texttt{diffs}: those between the opening of the PR and the reviewer comment
+	      (``before''), and those occurring after the comment (``after'').
+\end{itemize}
+
+Together, these components allow for rich modeling of code review interactions over time.
+Specialized views of this data, used for comment generation or code refinement tasks, can be derived
+through structured filtering.
+
+\subsubsection{Design Rationale}
+
+The schema is built around the principle of modularity. Rather than entangling comment logic, diff
+parsing, and code coverage into a flat structure, each concept is separated into its own dedicated
+field or object. This makes it easy to reason about and operate on specific parts of the dataset
+independently, for example, isolating all comments that suggest a change, or extracting only the
+diffs related to code files.
+
+\subsubsection{Serialization Formats}
+
+The dataset supports several serialization modes, depending on the intended downstream task. These
+include:
+\begin{itemize}
+	\item \texttt{full}: All fields are retained, giving a complete view of each entry.
+	\item \texttt{comment\_gen}: Only includes entries where the reviewer comment suggests a change,
+	      and retains just the code state and diffs before the comment. Useful to give as input to
+	      a model for the comment generation task.
+	\item \texttt{code\_refinement}: Filters to entries where the change was both suggested,
+	      implemented and covered by tests. Includes the comment and the ``before'' diff, but omits
+	      unrelated fields. Useful to give as input to a model for the code refinement task.
+	\item \texttt{webapp}: A lightweight format that includes only metadata and comments, intended
+	      for use in the webapp, so that it doesn't take long to load in memory.
+\end{itemize}
+
+Each mode produces a JSON file that is readable, compact, and suitable for different types of
+experiments or tools. In addition, the serialization process allows for filtering out entries that
+do not meet the criteria for inclusion in the dataset, such as comments that do not suggest a change
+or pull requests that failed somewhere along the pipeline described in Section \ref{sec:pipeline}.
+These “faulty” entries are not part of the intended dataset and are retained only as a form of
+internal logging. They serve two main purposes: enabling detailed analysis of failure patterns
+(e.g., identifying how many entries failed due to missing tests or broken builds), and helping
+future efforts to improve the pipeline itself. The dataset, as serialized for
+evaluation, is meant to consist exclusively of clean, validated entries that support the task of
+comment generation or refinement.
+
+\subsubsection{Use Case-Driven Filtering}
+
+This flexibility allows researchers and engineers to tailor the dataset to the task at hand. For
+example, a model trained to generate review comments may only require the pre-comment diff and
+associated files. A refinement model, on the other hand, benefits from both the comment and the
+changes made after it, with accurate annotation of whether the diff actually addressed the
+suggestion.
+
+The ability to serialize the dataset in multiple views avoids the need to rerun the full pipeline
+every time a new task is proposed. It also supports experimentation and benchmarking across
+different problem formulations while keeping the core data consistent.
+
+\subsubsection{Extensibility and Programmatic Access}
+
+Beyond serialization, the dataset class includes convenience methods for loading, filtering, and
+mapping entries by ID. Internally, the logic is implemented in a way that is agnostic to language or
+repository structure. This makes it easy to adapt the system to future extensions, such as
+supporting other programming languages or integrating with other evaluation pipelines.
+
+Overall, the dataset schema and its serialization logic reflect a balance between structure,
+flexibility, and practical usability, ensuring that the data can evolve alongside the research it
+supports.
+
 \subsection{Dataset Statistics}
 \subsection{Summary \& Deliverables}
