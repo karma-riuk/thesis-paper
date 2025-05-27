@@ -71,17 +71,104 @@ later in Section~\ref{sec:manual-selection}.
 
 \subsection{Automated Extraction Pipeline}
 \label{sec:pipeline}
+Transforming raw pull requests into usable training examples requires more than just scraping
+metadata from GitHub. It involves carefully extracting code changes, associating them with reviewer
+comments, validating their build and testability, and preserving the relevant context along the way.
+To achieve this at scale and with high fidelity, we developed a robust, modular, and fully automated
+pipeline. This system processes each pull request independently, performing all necessary
+extraction, validation, and archival steps in a reproducible and fault-tolerant manner.
 
-To process the selected repositories and extract clean code-review triplets, we built a fully
-automated pipeline that runs each pull request through a series of steps. The pipeline handles
-repository cloning, commit checkout, diff extraction, file inspection, compilation, testing, and
-coverage reporting — all inside isolated Docker containers.
+The following sections describe the guiding principles behind the pipeline, its overall
+architecture, the key stages involved, and the mechanisms used for error handling and parallel
+execution.
 
-Each pull request is treated independently and processed end-to-end. At every step, we log metadata
-and errors to track why a PR was accepted or discarded. Figure~\ref{fig:pipeline} gives an overview
-of this process. The full list of steps is detailed below, following the same numbering as in the
-pipeline diagram.
+\subsubsection{Purpose and Design Philosophy}
 
+The goal of the automated extraction pipeline is to transform raw pull requests from open-source
+repositories into structured, high-quality dataset entries suitable for evaluation. To do this
+effectively, the system must perform a complex sequence of steps, ranging from low-level repository
+operations to high-level semantic filtering, while maintaining reliability, traceability, and
+consistency at scale.
+
+This pipeline is designed to be fully automated. Given a set of candidate repositories, it processes
+each pull request independently from end to end, requiring no human intervention during execution.
+This level of automation is critical for large-scale dataset construction, but it comes with
+challenges: repositories vary widely in structure, quality, and tooling, and small inconsistencies
+can derail processing unless handled robustly.
+
+To address this, the pipeline is built with three guiding principles:
+\begin{enumerate}
+	\item \textbf{Isolation and Reproducibility.} All build and test steps are executed inside
+	      Docker containers, ensuring that the results are not affected by the host system and can
+	      be reproduced reliably.
+
+	\item \textbf{Resilience to Failure.} Each processing step is isolated and allowed to fail
+	      independently. A failure in one phase, such as test execution or coverage extraction, does
+	      not invalidate the rest of the data. Instead, failures are captured and logged with
+	      structured metadata so that partial but useful entries can still be retained.
+
+	\item \textbf{Transparency and Debuggability.} Every step records its outcome and, in the case
+	      of failure, the exact reason. This enables downstream analysis of failure rates and causes,
+	      and facilitates future improvements to the pipeline itself.
+\end{enumerate}
+
+The result is a system capable of ingesting a wide variety of pull requests, gracefully handling
+both clean and noisy cases, and producing a structured dataset where each entry includes not only
+the final output but also a trace of what succeeded or failed during processing.
+
+\subsubsection{High-Level Architecture}
+
+The pipeline is structured as a sequential series of processing stages, each responsible for a
+well-defined operation on a single pull request. These stages are executed one after the other, and
+at each step, relevant metadata is recorded and potential errors are caught and stored. This design
+promotes clarity, modularity, and traceability throughout the entire process.
+
+At a high level, the pipeline begins by cloning the repository and extracting the relevant code and
+comment information from the pull request. It then checks out the code states at the beginning and
+end of the pull request, archives these snapshots, and determines whether the comment pertains to
+code. If so, the pipeline continues by identifying the build system, attempting to compile the
+project, executing the test suite, and extracting coverage metrics. Regardless of success or failure
+in any step, a dataset entry is created and tagged with its processing outcome.
+
+Although each pull request is treated independently from a logical standpoint, in practice, the
+underlying repository state is shared on disk. For reasons of disk space efficiency, we do not
+duplicate the repository for each pull request. As a result, pull requests from the same repository
+are processed sequentially to avoid race conditions and state conflicts. However, because
+repositories themselves are fully independent, the pipeline is parallelized at the repository level:
+different repositories can be processed concurrently without interference. This strategy balances
+isolation with scalability, allowing the system to make efficient use of compute resources while
+maintaining correctness.
+
+Figure~\ref{fig:pipeline} presents a simplified overview of the pipeline’s control flow. The diagram
+groups the processing steps into three main phases: \textit{Setup}, \textit{Build \& Validation
+	Assessment}, and \textit{Finalization}. There is also a decision point between \textit{Setup} and
+\textit{Build \& Validation Assessment} that short-circuits unnecessary work when the comment is not
+related to code.
+
+\begin{itemize}
+	\item \textbf{Setup}: This phase includes cloning the repository, extracting the diffs and
+	      modified files, capturing the review comment, and archiving the relevant commits to preserve
+	      a reproducible view of the pull request before and after the review.
+
+	\item \textbf{Eligibility Check}: Before performing more expensive operations, the pipeline
+	      checks whether the comment targets a Java file. If it does not, the system skips the
+	      build phase entirely and proceeds directly to finalization, as test and build analysis
+	      are not relevant.
+
+	\item \textbf{Build \& Test Assessment}: For code-related comments, the pipeline identifies the build system,
+	      attempts to compile the code, runs the test suite, and tries to generate code coverage using
+	      JaCoCo. These steps are executed inside Docker containers for reproducibility.
+
+	\item \textbf{Finalization}: Regardless of success or failure in the previous phases, the
+	      pipeline saves the dataset entry along with rich metadata describing the processing outcome,
+	      including reasons for failure when applicable.
+\end{itemize}
+
+This structure ensures a clean separation of concerns while maintaining extensibility and fault
+tolerance. New capabilities or heuristics can be integrated into any phase with minimal disruption
+to the rest of the system. The modular layout also enables robust error handling, allowing the
+pipeline to continue processing even when individual pull requests encounter issues. This makes the
+system scalable and resilient when applied to large and diverse sets of repositories.
 
 \begin{figure}[!htbp]
 	\centering
@@ -89,129 +176,204 @@ pipeline diagram.
 			node distance=1cm and 1cm,
 			every node/.style={font=\small},
 			startstop/.style={circle, draw, minimum size=1cm},
-			process/.style={rectangle, draw, rounded corners, minimum width=6.5cm, align=center},
-			decision/.style={diamond, draw, aspect=2, inner sep=1pt, align=center},
+			process/.style={rectangle, draw, rounded corners, minimum width=4cm},
+			decision/.style={diamond, draw, minimum width = 4cm, aspect = 2, align=center},
 			arrow/.style={->, thick}
 		]
 
 		\node (start) [startstop] {Start};
-		\node (diffs) [process, below of=start] {1. Extract diffs (before \& after)};
-		\node (clone) [process, below of=diffs] {2. Clone repository};
-		\node (files) [process, below of=clone] {3. Extract source files (before/after)};
-		\node (comment) [process, below of=files] {4. Extract review comment};
-		\node (checkout1) [process, below of=comment] {5. Checkout base commit};
-		\node (archive1) [process, below of=checkout1] {6. Archive base snapshot};
-		\node (checkout2) [process, below of=archive1] {7. Checkout merged commit};
-		\node (archive2) [process, below of=checkout2] {8. Archive merged snapshot};
-
-		\node (iscode) [decision, below of=archive2, yshift=-.6cm] {9. Is comment\\code-related?};
-
-		% YES path
-		\node (detect) [process, right of=iscode, xshift=7cm] {10. Detect build system (Maven/Gradle)};
-		\node (build) [process, below of=detect] {11. Run build in Docker container};
-		\node (test) [process, below of=build] {12. Run tests \& extract test results};
-		\node (coverage) [process, below of=test] {13. Generate JaCoCo coverage reports};
-		\node (record) [process, below of=coverage] {14. Record per-file coverage};
-
-		% compute the midpoint between iscode and record
-		\coordinate (mid) at ($ (iscode)!0.5!(record) $);
-		\node (save) [process] at ($(mid |- record.south)+(0,-1cm)$) {15. Save entry};
+		\node (prep) [process, below of=start, yshift=-.1cm] {Setup};
+		\node (iscode) [decision, below of=prep, yshift=-.6cm] {Is comment\\code-related?};
+		\node (validation) [process, right of=iscode, xshift=7cm] {Build \& Validation Assessment};
+		\coordinate (mid) at ($ (iscode)!0.5!(validation) $);
+		\node (save) [process] at ($(mid |- validation.south)+(0,-1cm)$) {Finalization};
+		\node (end) [startstop, below of = save] {End};
 
 		% arrows - linear path
-		\draw[arrow] (start) -- (diffs);
-		\draw[arrow] (diffs) -- (clone);
-		\draw[arrow] (clone) -- (files);
-		\draw[arrow] (files) -- (comment);
-		\draw[arrow] (comment) -- (checkout1);
-		\draw[arrow] (checkout1) -- (archive1);
-		\draw[arrow] (archive1) -- (checkout2);
-		\draw[arrow] (checkout2) -- (archive2);
-		\draw[arrow] (archive2) -- (iscode);
-
-		% branch arrows
-		\draw[arrow] (iscode) -- (detect) node [pos=0.20, above] {yes};
-		\draw[arrow] (detect) -- (build);
-		\draw[arrow] (build) -- (test);
-		\draw[arrow] (test) -- (coverage);
-		\draw[arrow] (coverage) -- (record);
-
-		% then re-draw your arrows:
-		\draw[arrow] (record) |- (save);
-		\draw[arrow] (iscode) |- (save) node [pos=0.025, left] {no};
-
-		\node (end) [startstop, below of = save] {End};
+		\draw[arrow] (start) -- (prep);
+		\draw[arrow] (prep) -- (iscode);
+		\draw[arrow] (iscode) -- node [above] {yes} (validation) ;
+		\draw[arrow] (iscode) |- node [left] {no}(save) ;
+		\draw[arrow] (validation) |- (save);
 		\draw[arrow] (save) -- (end);
-
 	\end{tikzpicture}
 	\caption{Automated pipeline for processing a single pull request.}
 	\label{fig:pipeline}
 \end{figure}
 
-\begin{enumerate}
-	\item \textbf{Extract diffs (before \& after).} Using the GitHub API, we compute the unified
-	      diffs between the base commit and the first comment, and  the first comment and the
-	      merged commit.
+\subsubsection{Key Pipeline Stages}
 
-	\item \textbf{Clone repository.} The GitHub repository is cloned locally, with a check to avoid
-	      redundant downloads.
+This section provides a more detailed walkthrough of the core stages outlined in
+Figure~\ref{fig:pipeline}. Each pull request passes through the same structured sequence of
+operations, with intermediate state and outcomes logged to facilitate inspection, debugging, and
+dataset filtering.
 
-	\item \textbf{Extract source files (before/after).} We retrieve the full content of each changed
-	      file both before and after the merge, and store it in the \path{FileData} structure. If
-	      GitHub's API fails to deliver, we fall back to reading the file from disk.
+\paragraph{Setup.} The pipeline begins by cloning the target repository, unless it already exists
+locally. To avoid unnecessary downloads and to support resuming interrupted runs, previously cloned
+repositories are reused. Once the repository is available, the system retrieves both the base and
+merged commits of the pull request. These two commits serve as reference points to extract the code
+diffs before and after the review comment.
 
-	\item \textbf{Extract review comment.} We extract all review comments attached to the pull
-	      request and filter out those that do not point to a specific file and line range. The GitHub
-	      API can be inconsistent when it comes to providing line-level comment metadata, which is a
-	      known issue. To avoid uncertainty and reduce the amount of manual inspection required later,
-	      we exclude any comments that are missing this information.
+The system then attempts to extract the content of all files modified by the pull request. This is
+done using the GitHub API when possible, and directly from disk as a fallback when the API is
+incomplete or fails to deliver consistent results. Special care is taken to record both the pre- and
+post-merge versions of each file, as well as to ensure coverage data can be attached to the correct
+source snapshot.
 
-	\item \textbf{Checkout base commit.} We check out the commit at the tip of the base branch
-	      before the pull request was opened. This gives us the clean version of the code before any
-	      of the proposed changes were introduced.
+Review comments are extracted and filtered to retain only those that reference a specific file and
+line range. This is necessary because GitHub occasionally serves comments without reliable line
+anchoring. Comments without a valid line mapping are discarded early
+in the process to reduce ambiguity downstream.
 
-	\item \textbf{Archive base snapshot.} This version of the code is archived, creating a
-	      reproducible “before” state for future testing or manual inspection. It can also be used as
-	      context for a model that requires it.
+Both the base and merged states of the repository are archived in compressed form. These serve
+distinct purposes. The base state (representing the code before any changes introduced by the pull
+request) is primarily stored to provide broader context to models that may benefit from
+access to the entire project structure. While the dataset already includes the full content of the
+specific files involved in the pull request, some models may require a more holistic view of the
+repository to make informed predictions. The merged state, on the other hand, is preserved for
+evaluation purposes. In particular, it is used to test model-generated submissions in the context of
+the code refinement task. Details of this evaluation setup are discussed further in
+Section~\ref{sec:refinement}.
 
-	\item \textbf{Checkout merged commit.} We then check out the final merged commit of the pull
-	      request. This is the “after” state, assumed to reflect the author’s response to the review.
+\paragraph{Eligibility Check.} Once the setup phase is complete, the system performs a quick check
+to determine whether the review comment is attached to a source code file. If the comment points to
+a non-code file (e.g. documentation, configuration files, or assets) it is extremely unlikely that
+the suggested change involves actual code behavior. In such cases, running the full build phase,
+that includes build, test, and coverage analysis, would be unnecessary and wasteful. To conserve
+computational resources and reduce processing time, the pipeline bypasses that phase entirely for
+these entries and moves directly to finalization. This early filtering mechanism ensures that only
+potentially meaningful code-related changes undergo the more expensive analysis.
 
-	\item \textbf{Archive merged snapshot.} Similar to step 3, we archive the post-merge state to
-	      preserve the final version of the code.
+\paragraph{Build \& Test Assessment.} For comments that do target Java files, the pipeline enters
+the build and test assessment phase. It first detects whether the repository uses Maven or Gradle by
+inspecting known build configuration files. This allows it to spin up the appropriate Docker
+container, preconfigured with the necessary environment for building and testing Java code.
 
-	\item \textbf{Is comment code-related?} We check whether the comment refers to a Java file. If
-	      not, there's no point running tests or generating coverage, so we skip straight to storage.
+Once inside the container, the pipeline attempts to compile the codebase. If the build succeeds, it
+proceeds to run the test suite. If tests are detected and executed successfully, the system then
+attempts to extract code coverage information using JaCoCo. If the project already includes JaCoCo
+in its configuration, the system leverages that setup directly. Otherwise, it attempts to inject the
+required configuration into the build process. While this injection is not guaranteed to succeed in
+all cases, it enables coverage reporting in many repositories that would otherwise lack it.
 
-	\item \textbf{Detect build system (Maven/Gradle).} We scan the repository for common build files
-	      to determine whether to use Maven or Gradle. A specialized handler is then instantiated to
-	      run the remaining build steps inside Docker.
+After coverage reports are generated, the system analyzes them to determine whether the file
+affected by the review comment is included in the results. This is done by extracting the fully
+qualified class name from the file and searching for it in the coverage data. Due to the presence of
+multi-module repositories and inconsistent directory structures, this association is not always
+perfect. As discussed in Section~\ref{sec:multi-project-repo}, users must sometimes manually verify
+that the reported coverage corresponds to the correct subproject.
 
-	\item \textbf{Run build in Docker container.} The project is compiled inside an isolated
-	      environment.
+\paragraph{Finalization.} At the end of the pipeline, the system records the outcome of each
+processing step, including whether the pull request built and tested successfully, whether the
+commented file was covered by tests, and whether the comment was code-related. If any step failed,
+the reason is logged in structured metadata using a dedicated exception hierarchy. This allows for
+filtering and debugging later on.
 
-	\item \textbf{Run tests \& extract test results.} If compilation succeeds, we run the test suite
-	      and record whether the tests pass cleanly.
+Every processed pull request results in a dataset entry, even if a phase failed. This is a
+deliberate design choice: entries that fail the build phase may still contain useful review comments
+for tasks such as comment generation. By capturing the full trace of each pull request—including
+what succeeded, what failed, and why—the pipeline produces a dataset that is not only rich in
+content but also transparent and debuggable.
 
-	\item \textbf{Generate JaCoCo coverage reports.} We inject a JaCoCo plugin (if necessary) and
-	      generate line-level test coverage data for each file.
+\subsubsection{Failure Handling and Debuggability}
 
-	\item \textbf{Record per-file coverage.} We extract the percentage of covered lines for each
-	      file touched by the comment and store it in the dataset entry.
+One of the key challenges in building a dataset from real-world repositories is handling the wide
+range of inconsistencies, misconfigurations, and unexpected edge cases that arise in practice.
+Repositories may have incomplete histories, broken builds, missing dependencies, or improperly
+formatted comments. Rather than treat these cases as exceptions to be discarded, the pipeline is
+designed to process them as first-class outcomes and record their failure modes explicitly.
 
-	\item \textbf{Save entry.} We save the pull request.
-\end{enumerate}
+Each stage of the pipeline is wrapped in fine-grained error handling logic. When a step fails
+(whether due to a Git error, an unresolvable build issue, or malformed metadata) the failure is
+caught, and a dedicated custom exception class is raised. These exceptions are structured,
+categorized, and logged in the metadata of the corresponding dataset entry. This approach allows
+each pull request to contribute useful diagnostic information, even when it does not yield a fully
+valid instance.
 
-Every pull request that meets our structural criteria (an initial set of commits, a single review
-comment, and at least one follow-up commit) is saved to the dataset, regardless of whether the
-pipeline completes successfully. Each processing step is allowed to fail independently, and failures
-are handled through exception catching. This approach fits our use case well: when a step fails, it
-usually means that continuing further would not yield usable results. Rather than discarding these
-entries, we record the failure reason directly in the metadata. This makes it possible to gather
-statistics about common failure points in the pipeline and refine the system over time. Importantly,
-we chose not to remove these PRs entirely because they may still include high-quality review
-comments, which can be useful for the comment generation task even if the code does not compile or
-pass its tests.
+This design serves two purposes. First, it enables comprehensive statistics about failure rates and
+patterns across repositories. For example, one can measure how many entries fail at the build step,
+how many fail due to missing line mappings in comments, or how often coverage extraction fails due
+to JaCoCo injection issues. These insights help guide improvements to the pipeline and provide a
+realistic picture of what can be expected when operating at scale.
 
+Second, by retaining partially processed entries and clearly tagging them with their failure
+context, the pipeline supports debugging, validation, and experimentation without requiring
+re-processing from scratch. Entries that fail the build phase may still contain valuable
+content for the comment generation task.
+
+This robust failure management strategy ensures that the pipeline remains resilient in the face of
+the inconsistencies inherent to open-source codebases. It allows for high-throughput processing
+without sacrificing visibility into what went wrong, and it provides a mechanism for iterative
+refinement over time.
+
+\subsubsection{Parallelism and Scalability}
+
+To process a large number of repositories efficiently, the pipeline is designed with parallel
+execution capabilities. However, parallelism is applied at the repository level rather than the pull
+request level. This distinction is critical due to the way repositories are managed on disk.
+
+During processing, the build, test, and coverage phases operate directly on a local clone of the
+repository. Creating separate copies of the repository for each pull request would incur a
+substantial disk overhead, especially for large projects. To avoid this, the pipeline reuses a
+single local clone per repository. This means that only one pull request per repository can be
+processed at a time, ensuring consistency and preventing conflicts caused by concurrent checkouts or
+file modifications.
+
+To scale across repositories, the pipeline uses a multi-process architecture where multiple worker
+processes handle different repositories in parallel. Each worker runs its own isolated pipeline
+instance, with no shared state, and processes one repository at a time. This approach makes full use
+of available compute resources while preserving correctness and reproducibility.
+
+Parallelism also helps avoid bottlenecks caused by unbalanced workloads. Some repositories contain
+only a handful of pull requests and can be processed quickly, while others (especially those with
+extensive histories and complex build steps) take significantly longer. By distributing work across
+multiple repositories concurrently, the system avoids having to wait on the slowest task to proceed.
+
+However, true scalability is limited by another important factor: GitHub’s API rate limits. These
+constraints, and how the pipeline addresses them, are discussed in the next section.
+
+\subsubsection{Dealing with API Limits and Caching}
+
+A critical bottleneck in any large-scale GitHub data processing pipeline is the platform's API rate
+limit. GitHub imposes a cap of 5000 requests per hour per authenticated user. At first glance, this
+may appear generous, but in practice, it is quickly exhausted due to how the GitHub Python client
+operates.
+
+The library adopts a lazy-loading design: most objects returned from the API are incomplete by
+default and only fetch their full data when specific attributes are accessed. While this is
+efficient for bandwidth and memory usage, it results in many additional network calls during regular
+use. A single pull request may require dozens requests to fetch metadata, commit histories,
+comments and file contents.
+
+Fortunately, the library provides automatic handling of rate limit exhaustion. When the limit is
+reached, it enters a waiting state and resumes once requests become available again. This makes it
+safe to run the pipeline with multiple threads or processes: each one will automatically pause and
+continue as needed without crashing or violating GitHub’s usage policies.
+
+Despite this robustness, long pauses can be impractical when running large-scale crawls. To mitigate
+this, the pipeline includes two layers of caching:
+
+\begin{itemize}
+	\item \textbf{HTTP-level caching:} The GitHub responses themselves are cached locally using an
+	      auxiliary Python library, allowing the pipeline to skip API calls for data that has already
+	      been retrieved. This not only saves bandwidth and time but also avoids rate limits entirely
+	      for cached objects.
+
+	\item \textbf{Pipeline-level checkpointing:} The system tracks which pull requests have already
+	      been processed. If the pipeline is interrupted or restarted, it can pick up where it left
+	      off without reprocessing completed work. This enables stop-and-resume operation, which is
+	      especially valuable for long runs or incremental dataset builds.
+\end{itemize}
+
+While the GitHub Python library lacks thorough documentation, its internal behavior, once inspected,
+proves reliable and well-suited for automation at scale. On several occasions, the implementation
+had to be understood by directly reading its source code. Nonetheless, once these behaviors are
+accounted for, the client operates smoothly, and the pipeline is able to run unattended for extended
+periods, managing its own retries and pacing.
+
+These design decisions—automated rate limit handling, layered caching, and task
+checkpointing—combine to make the pipeline not just scalable in theory, but practically usable for
+large-scale, real-world dataset construction.
 
 \subsection{Build, Test \& Coverage}
 
@@ -274,6 +436,7 @@ individual files.
 
 \subsubsection{Handling Multi-Project Repositories}
 
+\label{sec:multi-project-repo}
 A major challenge arises when dealing with large repositories that are organized into multiple
 subprojects. These may be loosely coupled, deeply nested, or follow custom directory conventions.
 Because of this structural diversity, it is difficult to reliably map a given Java file to a
