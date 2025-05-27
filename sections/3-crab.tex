@@ -70,6 +70,7 @@ address the reviewer’s feedback. We handle these exceptions through manual val
 later in Section~\ref{sec:manual-selection}.
 
 \subsection{Automated Extraction Pipeline}
+\label{sec:pipeline}
 
 To process the selected repositories and extract clean code-review triplets, we built a fully
 automated pipeline that runs each pull request through a series of steps. The pipeline handles
@@ -147,57 +148,57 @@ pipeline diagram.
 \end{figure}
 
 \begin{enumerate}
-    \item \textbf{Extract diffs (before \& after).} Using the GitHub API, we compute the unified
-        diffs between the base commit and the first comment, and  the first comment and the
-        merged commit.
+	\item \textbf{Extract diffs (before \& after).} Using the GitHub API, we compute the unified
+	      diffs between the base commit and the first comment, and  the first comment and the
+	      merged commit.
 
-    \item \textbf{Clone repository.} The GitHub repository is cloned locally, with a check to avoid
-        redundant downloads.
+	\item \textbf{Clone repository.} The GitHub repository is cloned locally, with a check to avoid
+	      redundant downloads.
 
-    \item \textbf{Extract source files (before/after).} We retrieve the full content of each changed
-        file both before and after the merge, and store it in the \path{FileData} structure. If
-        GitHub's API fails to deliver, we fall back to reading the file from disk.
+	\item \textbf{Extract source files (before/after).} We retrieve the full content of each changed
+	      file both before and after the merge, and store it in the \path{FileData} structure. If
+	      GitHub's API fails to deliver, we fall back to reading the file from disk.
 
-    \item \textbf{Extract review comment.} We extract all review comments attached to the pull
-        request and filter out those that do not point to a specific file and line range. The GitHub
-        API can be inconsistent when it comes to providing line-level comment metadata, which is a
-        known issue. To avoid uncertainty and reduce the amount of manual inspection required later,
-        we exclude any comments that are missing this information.
+	\item \textbf{Extract review comment.} We extract all review comments attached to the pull
+	      request and filter out those that do not point to a specific file and line range. The GitHub
+	      API can be inconsistent when it comes to providing line-level comment metadata, which is a
+	      known issue. To avoid uncertainty and reduce the amount of manual inspection required later,
+	      we exclude any comments that are missing this information.
 
-    \item \textbf{Checkout base commit.} We check out the commit at the tip of the base branch
-        before the pull request was opened. This gives us the clean version of the code before any
-        of the proposed changes were introduced.
+	\item \textbf{Checkout base commit.} We check out the commit at the tip of the base branch
+	      before the pull request was opened. This gives us the clean version of the code before any
+	      of the proposed changes were introduced.
 
-    \item \textbf{Archive base snapshot.} This version of the code is archived, creating a
-        reproducible “before” state for future testing or manual inspection. It can also be used as
-        context for a model that requires it.
+	\item \textbf{Archive base snapshot.} This version of the code is archived, creating a
+	      reproducible “before” state for future testing or manual inspection. It can also be used as
+	      context for a model that requires it.
 
-    \item \textbf{Checkout merged commit.} We then check out the final merged commit of the pull
-        request. This is the “after” state, assumed to reflect the author’s response to the review.
+	\item \textbf{Checkout merged commit.} We then check out the final merged commit of the pull
+	      request. This is the “after” state, assumed to reflect the author’s response to the review.
 
-    \item \textbf{Archive merged snapshot.} Similar to step 3, we archive the post-merge state to
-        preserve the final version of the code.
+	\item \textbf{Archive merged snapshot.} Similar to step 3, we archive the post-merge state to
+	      preserve the final version of the code.
 
-    \item \textbf{Is comment code-related?} We check whether the comment refers to a Java file. If
-        not, there's no point running tests or generating coverage, so we skip straight to storage.
+	\item \textbf{Is comment code-related?} We check whether the comment refers to a Java file. If
+	      not, there's no point running tests or generating coverage, so we skip straight to storage.
 
-    \item \textbf{Detect build system (Maven/Gradle).} We scan the repository for common build files
-        to determine whether to use Maven or Gradle. A specialized handler is then instantiated to
-        run the remaining build steps inside Docker.
+	\item \textbf{Detect build system (Maven/Gradle).} We scan the repository for common build files
+	      to determine whether to use Maven or Gradle. A specialized handler is then instantiated to
+	      run the remaining build steps inside Docker.
 
-    \item \textbf{Run build in Docker container.} The project is compiled inside an isolated
-        environment.
+	\item \textbf{Run build in Docker container.} The project is compiled inside an isolated
+	      environment.
 
-    \item \textbf{Run tests \& extract test results.} If compilation succeeds, we run the test suite
-        and record whether the tests pass cleanly.
+	\item \textbf{Run tests \& extract test results.} If compilation succeeds, we run the test suite
+	      and record whether the tests pass cleanly.
 
-    \item \textbf{Generate JaCoCo coverage reports.} We inject a JaCoCo plugin (if necessary) and
-        generate line-level test coverage data for each file.
+	\item \textbf{Generate JaCoCo coverage reports.} We inject a JaCoCo plugin (if necessary) and
+	      generate line-level test coverage data for each file.
 
-    \item \textbf{Record per-file coverage.} We extract the percentage of covered lines for each
-        file touched by the comment and store it in the dataset entry.
+	\item \textbf{Record per-file coverage.} We extract the percentage of covered lines for each
+	      file touched by the comment and store it in the dataset entry.
 
-    \item \textbf{Save entry.} We save the pull request.
+	\item \textbf{Save entry.} We save the pull request.
 \end{enumerate}
 
 Every pull request that meets our structural criteria (an initial set of commits, a single review
@@ -325,7 +326,7 @@ suggestions. These can be roughly divided into two main types. The first are rhe
 which are generally straightforward to interpret. These tend to imply strong disapproval or an
 obvious recommendation, masked in the form of a question. For example, a reviewer might write,
 \textit{``Can you move this declaration down closer to where it's used?''} or \textit{``Isn't this
-redundant with the previous check?''} In most cases, the intent behind such comments is clear: they
+	redundant with the previous check?''} In most cases, the intent behind such comments is clear: they
 point out something that should be removed, refactored, or reconsidered.
 
 The second type of question-based comment is more difficult to classify. These are genuine
@@ -333,7 +334,7 @@ inquiries, often posed in good faith, reflecting uncertainty or opening a discus
 express doubt about a design choice, inquire about alternative implementations, or question whether
 a particular solution addresses the intended problem. For instance, a reviewer might ask,
 \textit{“Would it make sense to use a stream here instead of a loop?”} or \textit{“What happens if
-this input is null?”} The challenge with these types of comments is that they can be interpreted in
+	this input is null?”} The challenge with these types of comments is that they can be interpreted in
 multiple ways. Some reviewers may expect an immediate change, while others are simply requesting
 clarification. In many cases, the boundary between suggestion and inquiry is blurry, and
 classification depends on context: including the tone of the comment, the review history, and even
