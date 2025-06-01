@@ -645,5 +645,67 @@ Overall, the dataset schema and its serialization logic reflect a balance betwee
 flexibility, and practical usability, ensuring that the data can evolve alongside the research it
 supports.
 
-\subsection{Dataset Statistics}
+\subsection{Phases of Dataset Curation}
+
+The dataset construction process was performed in two phases, each with distinct strategies for
+repository filtering and pull request validation.
+
+\subsubsection{Initial Filtering and Manual Validation}
+
+The first phase began with a list of 4,795 repositories sourced from the GHS dataset. To narrow the
+scope, a pre-filtering step was applied. Each repository was cloned, and the following conditions
+were checked on the most recent commit of the default branch:
+
+\begin{itemize}
+    \item The project uses a supported build system (e.g., Maven or Gradle).
+    \item It compiles successfully.
+    \item All tests pass.
+    \item At least one test is present.
+\end{itemize}
+
+Only repositories satisfying all criteria were retained, reducing the list to 398 projects. From
+these, all available PRs were extracted, yielding 1,681 PRs in total. After manually validating
+whether the comments suggested changes and whether those changes were implemented, a set of 985 PRs
+was finalized for the comment generation task.
+
+A significant limitation emerged at this stage: although 22 PRs were both compilable and testable,
+none of them met the required test coverage conditions. This rendered the initial dataset
+insufficient for the code refinement task.
+
+\subsubsection{Updated Construction and Expanded Dataset}
+
+In response, the second phase re-ran the dataset construction on the full set of 4,795 repositories.
+This iteration incorporated improvements to the data collection pipeline, specifically:
+
+\begin{itemize}
+    \item Coverage checks were moved to the construction stage, rather than being deferred to manual
+        filtering.
+    \item A stricter coverage criterion was applied: the PR must have at least one coverage file
+        associated with the commented file, and all reported files must exhibit non-zero line
+        coverage.
+\end{itemize}
+
+These changes led to a more refined classification of pull requests valid for code refinement.
+Previously, a PR was considered valid if it compiled and tested successfully, regardless of test
+coverage. Now, a PR is only considered valid if it is (a) code-related, (b) builds and tests pass,
+and (c) the coverage condition is satisfied. 
+
+\subsubsection{Observations}
+
+The improvements made between the two runs significantly enhanced the reliability of the dataset
+construction process. While the first run provided useful insights, such as the overall rate of PR
+failures and the effectiveness of the manual filtering. It primarily served as a proving ground for
+iterating on the pipeline. Despite being limited to 398 repositories, it helped validate the
+extraction logic and informed adjustments to the coverage evaluation and PR validation mechanisms.
+
+Once the pipeline was considered robust, the second run extended the process to all 4,795
+repositories. This larger scope was essential to capture a broader and more diverse set of eligible
+PRs, especially for the code refinement task, that depend on accurate coverage information.
+
+Although the updated process improves coverage filtering, many PRs still fail the coverage check.
+One possible way to increase the number of PRs eligible for the refinement task would be to manually
+write targeted tests for cases where the code compiles and tests pass, but the changed lines are not
+yet covered.
+
+\subsection{Dataset statistics}
 \subsection{Summary \& Deliverables}
