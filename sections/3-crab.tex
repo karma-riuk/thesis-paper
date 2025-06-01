@@ -657,10 +657,10 @@ scope, a pre-filtering step was applied. Each repository was cloned, and the fol
 were checked on the most recent commit of the default branch:
 
 \begin{itemize}
-    \item The project uses a supported build system (e.g., Maven or Gradle).
-    \item It compiles successfully.
-    \item All tests pass.
-    \item At least one test is present.
+	\item The project uses a supported build system (e.g., Maven or Gradle).
+	\item It compiles successfully.
+	\item All tests pass.
+	\item At least one test is present.
 \end{itemize}
 
 Only repositories satisfying all criteria were retained, reducing the list to 398 projects. From
@@ -678,17 +678,17 @@ In response, the second phase re-ran the dataset construction on the full set of
 This iteration incorporated improvements to the data collection pipeline, specifically:
 
 \begin{itemize}
-    \item Coverage checks were moved to the construction stage, rather than being deferred to manual
-        filtering.
-    \item A stricter coverage criterion was applied: the PR must have at least one coverage file
-        associated with the commented file, and all reported files must exhibit non-zero line
-        coverage.
+	\item Coverage checks were moved to the construction stage, rather than being deferred to manual
+	      filtering.
+	\item A stricter coverage criterion was applied: the PR must have at least one coverage file
+	      associated with the commented file, and all reported files must exhibit non-zero line
+	      coverage.
 \end{itemize}
 
 These changes led to a more refined classification of pull requests valid for code refinement.
 Previously, a PR was considered valid if it compiled and tested successfully, regardless of test
 coverage. Now, a PR is only considered valid if it is (a) code-related, (b) builds and tests pass,
-and (c) the coverage condition is satisfied. 
+and (c) the coverage condition is satisfied.
 
 \subsubsection{Observations}
 
@@ -707,5 +707,123 @@ One possible way to increase the number of PRs eligible for the refinement task 
 write targeted tests for cases where the code compiles and tests pass, but the changed lines are not
 yet covered.
 
-\subsection{Dataset statistics}
+\subsection{Dataset Statistics}
+
+This section presents statistics from both phases of dataset construction. We begin by analyzing the
+dataset derived from the 398 pre-filtered repositories. This smaller-scale dataset was the only one
+subjected to manual selection, given its more manageable size of 1,681 pull requests. It allows us
+to examine the failure distribution across PRs and the impact of manual validation on final PR
+eligibility.
+
+We then turn to the second dataset, built from the full set of 4,795 repositories. Although no
+manual filtering was applied to this version, the insights gained from the first dataset provide a
+useful baseline for interpreting its structure and expected failure patterns.
+
+\subsubsection{Initial Dataset: Pre-filtered Repositories}
+
+The initial pipeline run on the 398 pre-filtered repositories produced a total of 1,681 pull
+requests that satisfied the baseline conditions for extraction. These PRs met the structural
+requirements outlined in the data collection process: a single code review comment and a reply from
+the PR author.
+
+Table~\ref{tab:initial-distribution} summarizes the distribution of these PRs by technical
+eligibility. Notably, only a small portion of PRs both compiled and passed tests, and an even
+smaller subset met the coverage criterion.
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{lrr}
+		\toprule
+		\textbf{Subset}                           & \textbf{Count} & \textbf{Percentage} \\
+		\midrule
+		Total dataset                             & 1681           & 100.00\%            \\
+		Not code-related                          & 520            & 30.93\%             \\
+		Builds and passes tests, not covered      & 151            & 8.98\%              \\
+		Builds and passes tests, covered by tests & 0              & 0.00\%              \\
+		\bottomrule
+	\end{tabular}
+	\caption{Breakdown of initial dataset (1,681 PRs)}
+	\label{tab:initial-distribution}
+\end{table}
+
+Out of the 1,681 PRs, 985 were manually selected as suitable for the comment generation task. This
+corresponds to 58.59\% of the total. Table~\ref{tab:manual-selection-distribution} shows how this
+filtered subset compares internally in terms of technical readiness.
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{lrr}
+		\toprule
+		\textbf{Subset}         & \textbf{Count} & \textbf{Percentage} \\
+		\midrule
+		Selected subset         & 985            & 100.00\%            \\
+		Not code-related        & 322            & 32.69\%             \\
+		Builds and passes tests & 101            & 10.25\%             \\
+		Covered by tests        & 0              & 0.00\%              \\
+		\bottomrule
+	\end{tabular}
+	\caption{Breakdown of manually selected subset (985 PRs)}
+	\label{tab:manual-selection-distribution}
+\end{table}
+
+While the first run served its purpose in validating the pipeline and understanding failure modes,
+it also revealed a major limitation: only a very small number of PRs met the coverage requirement.
+This fell short of the initial objective of supporting tasks like code refinement, which rely on
+coverage data. As a result, it became clear that running the pipeline on a larger pool of
+repositories was necessary to obtain a meaningful number of eligible PRs.
+
+\paragraph{Failure Analysis}
+
+The initial dataset also provided a valuable overview of the types of failures encountered during
+automated processing. Table~\ref{tab:failure-distribution} summarizes the most common failure
+categories observed during the extraction pipeline. For readability, only the most frequent issues
+are shown explicitly; the remaining cases have been grouped under ``Other issues.''
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{lrr}
+		\toprule
+		\textbf{Failure Reason}                   & \textbf{Count} & \textbf{Percentage} \\
+		\midrule
+		Failed to compile                         & 341            & 20.29\%             \\
+		Commented file not in any coverage report & 167            & 9.93\%              \\
+		Failed to test                            & 131            & 7.79\%              \\
+		Couldn't fetch PR's merge commit          & 117            & 6.96\%              \\
+		Couldn't get diffs after last commit      & 84             & 5.00\%              \\
+		Couldn't execute coverage tool (JaCoCo)   & 62             & 3.69\%              \\
+		No tests found                            & 56             & 3.33\%              \\
+		Failed to extract test results            & 17             & 1.01\%              \\
+		Other issues                              & 35             & 2.08\%              \\
+		\bottomrule
+	\end{tabular}
+	\caption{Most common failure reasons in initial dataset (1,681 PRs)}
+	\label{tab:failure-distribution}
+\end{table}
+
+These failure cases fall into several categories: build issues, coverage limitations, GitHub API
+inconsistencies, and project-specific anomalies (e.g., deleted or renamed files, unusual repository
+structures). While some of these failures are inherent to the dynamic nature of open-source
+projects, others reveal areas where the pipeline could be hardened.
+
+
+In practice, many of these failure cases were manually inspected during the first dataset run, which
+itself was re-executed multiple times as the pipeline was refined. These iterations helped identify
+edge cases and improve the robustness of the extraction process. Additional improvements were made
+afterward and incorporated into the second dataset run, such as a more thorough coverage check and
+multithreading, among others. Nonetheless, a portion of these issues, such as incomplete
+coverage reports or unusual file responses, remain difficult to resolve automatically. Targeted
+manual investigation or fallback mechanisms could further reduce failure rates and increase the
+number of valid PRs in future iterations.
+
+\subsubsection{Expanded Dataset: Full Repository Set}
+% Talk about:
+% - Total number of PRs processed
+% - Valid PRs by new criteria
+% - No manual selection, but inference from previous run
+% - Notable differences (e.g., increase in coverage-qualified PRs)
+
+\subsubsection{Interpretation}
+% Compare proportions where appropriate
+% Comment on how small dataset shaped expectations
+% Mention further potential (e.g., writing tests to increase eligibility)
 \subsection{Summary \& Deliverables}
