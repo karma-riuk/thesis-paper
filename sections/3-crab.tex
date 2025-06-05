@@ -15,7 +15,7 @@ We focused on Java projects and aimed for high quality over quantity. That means
 examples that are self-contained, testable, and likely to be meaningful. As a starting point, we
 used the \textit{GHS} dataset and tool introduced by Dabić \etal~\cite{Dabic:msr2021data}, which
 supports project sampling for Mining Software Repositories (MSR) studies by providing rich metadata
-for over 700,000 GitHub repositories. Their platform made it possible to filter for Java
+for over 700'000 GitHub repositories. Their platform made it possible to filter for Java
 repositories with relevant properties like number of commits, license, and recent activity.
 
 This section explains how we constructed the dataset, how we defined the two benchmark tasks
@@ -28,7 +28,7 @@ useful for evaluating future models.
 \subsubsection{Repository Sampling}
 
 We began by querying the \textit{GHS} dataset~\cite{Dabic:msr2021data}, a large-scale repository
-mining platform that indexes metadata for over 700,000 GitHub projects. Using the web interface at
+mining platform that indexes metadata for over 700'000 GitHub projects. Using the web interface at
 \url{https://seart-ghs.si.usi.ch}, we applied two simple filters:
 
 \begin{itemize}
@@ -560,6 +560,8 @@ approach allows for more reliable evaluation of models in tasks that require nua
 of code review dynamics.
 
 \subsection{Paraphrases generation}
+\label{sec:paraphrases}
+
 \subsection{Dataset Schema \& Serialization}
 
 The dataset is designed to be both expressive and flexible. Each entry represents a single pull
@@ -652,7 +654,7 @@ repository filtering and pull request validation.
 
 \subsubsection{Initial Filtering and Manual Validation}
 
-The first phase began with a list of 4,795 repositories sourced from the GHS dataset. To narrow the
+The first phase began with a list of 4'795 repositories sourced from the GHS dataset. To narrow the
 scope, a pre-filtering step was applied. Each repository was cloned, and the following conditions
 were checked on the most recent commit of the default branch:
 
@@ -664,7 +666,7 @@ were checked on the most recent commit of the default branch:
 \end{itemize}
 
 Only repositories satisfying all criteria were retained, reducing the list to 398 projects. From
-these, all available PRs were extracted, yielding 1,681 PRs in total. After manually validating
+these, all available PRs were extracted, yielding 1'681 PRs in total. After manually validating
 whether the comments suggested changes and whether those changes were implemented, a set of 985 PRs
 was finalized for the comment generation task.
 
@@ -674,7 +676,7 @@ insufficient for the code refinement task.
 
 \subsubsection{Updated Construction and Expanded Dataset}
 
-In response, the second phase re-ran the dataset construction on the full set of 4,795 repositories.
+In response, the second phase re-ran the dataset construction on the full set of 4'795 repositories.
 This iteration incorporated improvements to the data collection pipeline, specifically:
 
 \begin{itemize}
@@ -698,7 +700,7 @@ failures and the effectiveness of the manual filtering. It primarily served as a
 iterating on the pipeline. Despite being limited to 398 repositories, it helped validate the
 extraction logic and informed adjustments to the coverage evaluation and PR validation mechanisms.
 
-Once the pipeline was considered robust, the second run extended the process to all 4,795
+Once the pipeline was considered robust, the second run extended the process to all 4'795
 repositories. This larger scope was essential to capture a broader and more diverse set of eligible
 PRs, especially for the code refinement task, that depend on accurate coverage information.
 
@@ -711,24 +713,50 @@ yet covered.
 
 This section presents statistics from both phases of dataset construction. We begin by analyzing the
 dataset derived from the 398 pre-filtered repositories. This smaller-scale dataset was the only one
-subjected to manual selection, given its more manageable size of 1,681 pull requests. It allows us
+subjected to manual selection, given its more manageable size of 1'681 pull requests. It allows us
 to examine the failure distribution across PRs and the impact of manual validation on final PR
 eligibility.
 
-We then turn to the second dataset, built from the full set of 4,795 repositories. Although no
+We then turn to the second dataset, built from the full set of 4'795 repositories. Although no
 manual filtering was applied to this version, the insights gained from the first dataset provide a
 useful baseline for interpreting its structure and expected failure patterns.
 
 \subsubsection{Initial Dataset: Pre-filtered Repositories}
 
-The initial pipeline run on the 398 pre-filtered repositories produced a total of 1,681 pull
-requests that satisfied the baseline conditions for extraction. These PRs met the structural
-requirements outlined in the data collection process: a single code review comment and a reply from
-the PR author.
+Before scaling up to a broader corpus, we conducted an initial run of the dataset construction
+process on a smaller, pre-filtered set of repositories. Table~\ref{tab:initial-distribution}
+summarizes the outcome of this first stage. A substantial portion of the PRs (over 64\%) encountered
+issues during automated processing. These ranged from compilation failures to missing commits or
+broken diffs. About 27\% of the total were not code-related (i.e., the review comments did not
+target source code files). The remaining slices represent entries that passed both build and test
+phases, but only 4.87\% were covered by tests.
 
-Table~\ref{tab:initial-distribution} summarizes the distribution of these PRs by technical
-eligibility. Notably, only a small portion of PRs both compiled and passed tests, and an even
-smaller subset met the coverage criterion.
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{lrr}
+		\toprule
+		\textbf{Subset}                                        & \textbf{Count} & \textbf{Percentage} \\
+		\midrule
+		Total dataset                                          & 1704           & 100.00\%            \\
+		Had issues during processing                           & 1094           & 64.20\%             \\
+		Not code-related                                       & 456            & 26.76\%             \\
+		Builds and passes tests, not covered                   & 71             & 4.17\%              \\
+		Builds and passes tests, covered by tests\footnotemark & 83             & 4.87\%              \\
+		\bottomrule
+	\end{tabular}
+	\caption{Breakdown of initial dataset (1'704 PRs)}
+	\label{tab:initial-distribution}
+\end{table}
+
+\footnotetext{Domanda per Bavota: non so in che ordine mettere le righe della tabella. L’idea è
+	partire dal totale e togliere le parti non rilevanti, arrivando all’ultima riga con i risultati
+	desiderati (per il code refinement). Prima funzionava perché i numeri erano decrescenti, ma ora
+	l’ultima ha un valore più alto della penultima... Che ne pensa?}
+
+To better assess data quality, a manually curated subset of 894 entries was extracted from this
+initial pool. Table~\ref{tab:manual-selection-distribution} shows the composition of this manually
+selected group. The distribution of processing issues and coverage is broadly similar. One key
+insight is that the proportion of test-covered PRs increases slightly, up to 7.61\%.
 
 \begin{table}[ht]
 	\centering
@@ -736,41 +764,31 @@ smaller subset met the coverage criterion.
 		\toprule
 		\textbf{Subset}                           & \textbf{Count} & \textbf{Percentage} \\
 		\midrule
-		Total dataset                             & 1681           & 100.00\%            \\
-		Not code-related                          & 520            & 30.93\%             \\
-		Builds and passes tests, not covered      & 151            & 8.98\%              \\
-		Builds and passes tests, covered by tests & 0              & 0.00\%              \\
+		Selected subset                           & 894            & 100.00\%            \\
+		Had issues during processing              & 495            & 55.37\%             \\
+		Not code-related                          & 284            & 31.77\%             \\
+		Builds and passes tests, not covered      & 47             & 5.25\%              \\
+		Builds and passes tests, covered by tests & 68             & 7.61\%              \\
 		\bottomrule
 	\end{tabular}
-	\caption{Breakdown of initial dataset (1,681 PRs)}
-	\label{tab:initial-distribution}
-\end{table}
-
-Out of the 1,681 PRs, 985 were manually selected as suitable for the comment generation task. This
-corresponds to 58.59\% of the total. Table~\ref{tab:manual-selection-distribution} shows how this
-filtered subset compares internally in terms of technical readiness.
-
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{lrr}
-		\toprule
-		\textbf{Subset}         & \textbf{Count} & \textbf{Percentage} \\
-		\midrule
-		Selected subset         & 985            & 100.00\%            \\
-		Not code-related        & 322            & 32.69\%             \\
-		Builds and passes tests & 101            & 10.25\%             \\
-		Covered by tests        & 0              & 0.00\%              \\
-		\bottomrule
-	\end{tabular}
-	\caption{Breakdown of manually selected subset (985 PRs)}
+	\caption{Breakdown of manually selected subset (894 PRs)}
 	\label{tab:manual-selection-distribution}
 \end{table}
 
-While the first run served its purpose in validating the pipeline and understanding failure modes,
-it also revealed a major limitation: only a very small number of PRs met the coverage requirement.
-This fell short of the initial objective of supporting tasks like code refinement, which rely on
-coverage data. As a result, it became clear that running the pipeline on a larger pool of
-repositories was necessary to obtain a meaningful number of eligible PRs.
+It is worth emphasizing that entries which encountered issues during processing are not necessarily
+unusable. In particular, if the code state at the beginning of the PR, the diff before the comment,
+and the comment itself are all available, the instance remains a valid input for the comment
+generation task. While such examples are excluded from the refinement benchmark due to lack of test
+feedback, they still represent meaningful reviewer interactions.
+
+This initial run exposed the limitations of automatic extraction and set a realistic baseline for
+expected yield: only a small fraction of PRs (roughly 4.81\%) were both testable and covered. We
+hoped to see a similar or better outcome in the expanded dataset constructed from a broader
+repository set. Unfortunately, as later sections show, this expectation did not hold.
+
+The full processing of this dataset using five parallel threads took roughly 7 hours, thanks to full
+caching of GitHub API requests. Without caching, the same run would be subject to API rate limits
+and request overhead, and is estimated to require approximately five days to complete.
 
 \paragraph{Failure Analysis}
 
@@ -783,28 +801,34 @@ are shown explicitly; the remaining cases have been grouped under ``Other issues
 	\centering
 	\begin{tabular}{lrr}
 		\toprule
-		\textbf{Failure Reason}                   & \textbf{Count} & \textbf{Percentage} \\
+		\textbf{Failure Reason}                             & \textbf{Count} & \textbf{Percentage} \\
 		\midrule
-		Failed to compile                         & 341            & 20.29\%             \\
-		Commented file not in any coverage report & 167            & 9.93\%              \\
-		Failed to test                            & 131            & 7.79\%              \\
-		Couldn't fetch PR's merge commit          & 117            & 6.96\%              \\
-		Couldn't get diffs after last commit      & 84             & 5.00\%              \\
-		Couldn't execute coverage tool (JaCoCo)   & 62             & 3.69\%              \\
-		No tests found                            & 56             & 3.33\%              \\
-		Failed to extract test results            & 17             & 1.01\%              \\
-		Other issues                              & 35             & 2.08\%              \\
+		Failed to compile                                   & 296            & 21.14\%             \\
+		Commented file not in any coverage report           & 153            & 8.98\%              \\
+		Failed to test                                      & 120            & 7.04\%              \\
+		Comment not associated with a specific file or line & 116            & 6.81\%              \\
+		Referenced line absent in pre-comment diffs         & 109            & 6.40\%              \\
+		Couldn't get diffs after last commit                & 84             & 4.93\%              \\
+		Couldn't fetch PR's merge commit\footnotemark       & 78             & 4.58\%              \\
+		Couldn't execute coverage tool (JaCoCo)             & 60             & 3.52\%              \\
+		No tests found                                      & 37             & 2.17\%              \\
+		Failed to extract test results                      & 14             & 0.82\%              \\
+		Other issues                                        & 27             & 1.58\%              \\
 		\bottomrule
 	\end{tabular}
-	\caption{Most common failure reasons in initial dataset (1,681 PRs)}
+	\caption{Most common failure reasons in initial dataset (1'704 PRs)}
 	\label{tab:failure-distribution}
 \end{table}
+
+\footnotetext{This is a known limitation of the GitHub API, as discussed
+	in~\cite{stackoverflow-merge-sha}. Although we implemented the workaround suggested in the discussion,
+	it only partially mitigated the problem. Some PRs still fail due to missing or inaccessible merge
+	commits.}
 
 These failure cases fall into several categories: build issues, coverage limitations, GitHub API
 inconsistencies, and project-specific anomalies (e.g., deleted or renamed files, unusual repository
 structures). While some of these failures are inherent to the dynamic nature of open-source
 projects, others reveal areas where the pipeline could be hardened.
-
 
 In practice, many of these failure cases were manually inspected during the first dataset run, which
 itself was re-executed multiple times as the pipeline was refined. These iterations helped identify
@@ -816,14 +840,386 @@ manual investigation or fallback mechanisms could further reduce failure rates a
 number of valid PRs in future iterations.
 
 \subsubsection{Expanded Dataset: Full Repository Set}
-% Talk about:
-% - Total number of PRs processed
-% - Valid PRs by new criteria
-% - No manual selection, but inference from previous run
-% - Notable differences (e.g., increase in coverage-qualified PRs)
 
-\subsubsection{Interpretation}
-% Compare proportions where appropriate
-% Comment on how small dataset shaped expectations
-% Mention further potential (e.g., writing tests to increase eligibility)
+After validating the extraction pipeline on a smaller pre-filtered sample, we extended the dataset
+construction to the full set of 4'795 Java repositories sourced from the GHS dataset. Unlike the
+initial phase, no pre-filtering was applied to ensure buildability or test presence. This choice
+aimed to better understand the pipeline’s behavior under more realistic, large-scale conditions, and
+to increase the likelihood of finding a larger number of PRs that compile, test successfully, and
+are covered by tests.
+
+The repositories were processed in descending order of stargazers, based on the assumption that
+projects with a higher number of stars are likely to be of higher quality. The rationale was that
+more prominent projects are generally better maintained and enforce stricter contribution
+guidelines, which could lead to cleaner, more meaningful PRs. However, this strategy may have
+backfired. Projects with high visibility also tend to be larger, more complex, and more prone to use
+custom or non-standard build systems, making them harder to compile and test automatically.
+
+Table~\ref{tab:expanded-distribution} shows the final breakdown of this expanded dataset. Out of
+16'376 processed pull requests, 75.89\% encountered issues during processing. Only 0.32\% passed the
+full build and test phase and were covered by tests: just 52 PRs across the entire run. This
+highlights a critical bottleneck in relying on automated evaluation, especially in large,
+heterogeneous codebases.
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{lrr}
+		\toprule
+		\textbf{Subset}                           & \textbf{Count} & \textbf{Percentage} \\
+		\midrule
+		Total dataset                             & 16'376         & 100.00\%            \\
+		Had issues during processing              & 12'428         & 75.89\%             \\
+		Not code-related                          & 3'948          & 24.11\%             \\
+		Builds and passes tests, not covered      & 29             & 0.18\%              \\
+		Builds and passes tests, covered by tests & 52             & 0.32\%              \\
+		\bottomrule
+	\end{tabular}
+	\caption{Breakdown of expanded dataset (16'376 PRs)}
+	\label{tab:expanded-distribution}
+\end{table}
+
+The full run was executed over the course of 10 days using five concurrent threads. During this
+time, the system managed to process only about 300 repositories, revealing the hidden cost of
+attempting to extract usable data from large-scale, real-world projects. The low yield of covered
+entries is partly explained by the nature of the selected repositories. In particular, 2'714 pull
+requests (16.65\%) failed because the pipeline could not locate a recognizable build file. Another
+4'612 (28.29\%) failed at the compilation stage. These numbers are not unexpected, as the
+repositories were drawn directly from GHS without any guarantee that they used supported build
+systems. Given the size and complexity of many of these projects, it's likely that a significant
+portion rely on custom build setups that are difficult or impossible to replicate automatically.
+
+In hindsight, this ordering strategy, based purely on stargazer count, proved suboptimal. Although
+it increased the likelihood of encountering high-quality review interactions, it also severely
+limited the number of exploitable PRs due to technical constraints. A more effective ordering or
+selection heuristic has yet to be discovered.
+
+On the positive side, the high volume of PRs yielded by these large projects provides a rich pool of
+potential instances for the comment generation task. While the total number of PRs (16'376) is too
+large to manually go through, we hypothesize that the overall quality, once filtered, could be quite
+high. This hypothesis remains to be tested through a more targeted validation effort.
+
+Fortunately, the modularity of the pipeline enables future improvements in filtering. One promising
+direction is the addition of a lightweight classification step during the setup phase, where a large
+language model (either an online service or a locally fine-tuned model) is queried to assess whether
+a comment suggests a change. This would allow researchers to pre-filter PRs based on semantic
+intent, substantially reducing the manual workload. For instance, the model could be asked:
+\textit{``Does this comment request any change or modification to the code?''} This fast and
+effective filtering layer would enable downstream manual curation to focus only on PRs likely to
+contain meaningful reviewer-author interactions.
+
+In summary, the expanded dataset exposed the practical limits of automated extraction in
+uncontrolled environments. While the raw volume of data is promising, a better prioritization
+strategy and tooling to assist in manual triage are essential for building high-quality
+benchmarks at scale.
+
+
+\subsubsection{Descriptive Statistics and Distribution Insights}
+
+Beyond basic counts and processing outcomes, this section explores a series of descriptive
+statistics that offer a more nuanced view of the dataset’s composition and structure. These
+statistics help quantify how the data is distributed across repositories, how verbose the comments
+are, and how much code is typically changed before and after the review comments. This analysis also
+highlights the impact of manual selection on the relevance and clarity of the diffs retained for
+model input.
+
+\paragraph{Distribution of PRs per repository}
+The selected dataset, comprising 894 manually curated pull requests, spans a total of 168
+repositories. As shown in Figure~\ref{fig:pr-dist}, the distribution of PRs per repository is highly
+skewed. A significant number of repositories contribute only a handful of PRs: half of them provide
+two or fewer, while a few repositories dominate the dataset with dozens of entries.
+
+\begin{figure}[ht]
+	\centering
+	\begin{tikzpicture}
+		\begin{axis}[
+				width=0.85\linewidth,
+				height=8cm,
+				ybar,
+				bar width=5pt,
+				xlabel={Number of PRs per Repository},
+				ylabel={Number of Repositories},
+				grid=major,
+				title={Distribution of PR Counts},
+				xmin=0,
+				enlarge x limits=0.05,
+				ymin=0,
+				hist={
+						bins=30,
+						data min=1,
+						data max=91
+					}
+			]
+			\addplot+[
+				hist
+			] table [y index=1] {data/repo2pr.dat};
+		\end{axis}
+	\end{tikzpicture}
+	\caption{Histogram of PR counts per repository, based on the selected dataset of 894 entries
+		from 168 repositories. Each bar shows how many repositories contributed a given number of pull
+		requests.}
+	\label{fig:pr-dist}
+\end{figure}
+
+
+
+\paragraph{Repository Breakdown by Task.}
+As seen in Figure~\ref{fig:pr-dist} not all repositories contribute equally across tasks.
+Tables~\ref{tab:top-repos-comment} and~\ref{tab:top-repos-refinement} show the top five repositories
+for comment generation and code refinement respectively. For comment generation, a small number of
+repositories make up a large portion of the total dataset. For example, \path{magefree/mage} alone
+contributes over 10\% of the selected entries. In contrast, the code refinement task draws from a
+smaller, more selective subset of PRs, making each contributing repository more prominent.
+Interestingly, \path{OpenAPITools/openapi-generator} appears in both lists, reflecting both its
+comment activity and the fact that its build and test setup was compatible with the pipeline. This
+dual presence suggests that certain projects are particularly well-suited for automated benchmark
+extraction.
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{lrr}
+		\toprule
+		\textbf{Repository}                         & \textbf{PRs} & \textbf{\% of Total} \\
+		\midrule
+		magefree/mage                               & 91           & 10.18\%              \\
+		OpenAPITools/openapi-generator              & 63           & 7.05\%               \\
+		blackducksoftware/detect                    & 45           & 5.03\%               \\
+		wso2-extensions/identity-inbound-auth-oauth & 31           & 3.47\%               \\
+		ome/bioformats                              & 27           & 3.02\%               \\
+		\bottomrule
+	\end{tabular}
+	\caption{Top 5 repositories by number of PRs for the comment generation task (894 total PRs).}
+	\label{tab:top-repos-comment}
+\end{table}
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{lrr}
+		\toprule
+		\textbf{Repository}             & \textbf{PRs} & \textbf{\% of Total} \\
+		\midrule
+		OpenAPITools/openapi-generator  & 10           & 14.71\%              \\
+		googleapis/java-spanner         & 6            & 8.82\%               \\
+		googleapis/java-storage         & 6            & 8.82\%               \\
+		googleapis/java-bigtable        & 5            & 7.35\%               \\
+		googleapis/java-bigquerystorage & 4            & 5.88\%               \\
+		\bottomrule
+	\end{tabular}
+	\caption{Top 5 repositories by number of PRs for the code refinement task (68 total PRs).}
+	\label{tab:top-repos-refinement}
+\end{table}
+
+\paragraph{Tokens per Comment.}
+To better understand the variability in reviewer feedback, we examined the number of tokens per
+comment. For this analysis, we defined a token as any non-zero-length sequence of contiguous
+alphanumeric characters. As shown in Figure~\ref{fig:token-histograms}, most comments are short and
+concise: the median is 14 tokens, with the third quartile at 25. A few comments are significantly
+longer, reaching up to 935 tokens. These longer entries are mostly produced by automated bots that
+perform static analysis and report detailed findings. The presence of both short and long comments
+in the dataset is useful, as it provides naturally varied ground truth targets. Since one of the
+goals of this benchmark is to support paraphrase generation of different lengths (as discussed in
+Section \ref{sec:paraphrases}), having original comments that span a wide range of verbosity is a
+strength of the dataset.
+
+\begin{figure}[ht]
+	\centering
+	\begin{tikzpicture}
+		\begin{axis}[
+				width=0.85\linewidth,
+				height=7cm,
+				ybar,
+				bar width=3pt,
+				xlabel={Tokens per Comment},
+				ylabel={Number of Comments},
+				grid=major,
+				title={Token Count Distribution per Comment},
+				ymin=0,
+				enlarge x limits=0.05,
+			]
+			\addplot+[
+				hist
+			] table [y index=0] {data/tokens2count.dat};
+		\end{axis}
+	\end{tikzpicture}
+
+	\caption{Histogram of token counts per comment in the selected dataset. Each bar represents the
+		number of comments whose token counts fall within a given range, determined by the bin width.}
+	\label{fig:token-histograms}
+\end{figure}
+
+\paragraph{Size of Diffs and File Scope Before the Comment.}
+To characterize the context available prior to each reviewer comment, we examined two key
+properties: the total size of the diff and the number of files modified. As shown in
+Figure~\ref{fig:diff-before}, the diff sizes vary widely, with a median of 105.5 lines and some pull
+requests modifying nearly 20'000 lines of code. The majority of PRs fall below 500 changed lines,
+but a long tail of very large changes exists. We also looked at how many files were affected before
+the comment. Here, the median is 3 files per PR, with 75\% of instances touching no more than 6
+files. A few PRs, however, span dozens or even hundreds of files: up to 300 in the most extreme
+case. Because both distributions are highly skewed, it is difficult to plot them in full without
+compressing the visual scale. The histograms focus on the denser regions of the data to preserve
+readability.
+
+\begin{figure}[ht]
+	\centering
+	\begin{tikzpicture}
+		\begin{axis}[
+				width=0.85\linewidth,
+				height=7cm,
+				ybar,
+				bar width=3pt,
+				xlabel={Lines of Code Changed},
+				ylabel={Number of PRs},
+				grid=major,
+				title={Diff Size Before the Comment},
+				ymin=0,
+				enlarge x limits=0.05,
+			]
+			\addplot+[
+				hist
+			] table [y index=0] {data/diff_before_sizes.dat};
+		\end{axis}
+	\end{tikzpicture}
+
+	\vspace{1em}
+
+	\begin{tikzpicture}
+		\begin{axis}[
+				width=0.85\linewidth,
+				height=7cm,
+				ybar,
+				bar width=3pt,
+				xlabel={Number of Files Changed},
+				ylabel={Number of PRs},
+				grid=major,
+				title={File Scope Before the Comment},
+				ymin=0,
+				enlarge x limits=0.05,
+			]
+			\addplot+[
+				hist
+			] table [y index=0] {data/n_files_before.dat};
+		\end{axis}
+	\end{tikzpicture}
+
+	\caption{Top: histogram of diff sizes (in lines of code) before the comment. Bottom: number of files modified prior to the comment. Each bar shows how many PRs fall into a given size range.}
+	\label{fig:diff-before}
+\end{figure}
+
+\paragraph{Post-Comment Diff Size and Scope (Covered PRs Only).}
+Post-comment diffs are only relevant for PRs that are covered by tests, as these are the only
+candidates for the code refinement task. In this subset, we observe a dramatic increase in both the
+size of the diffs and the number of files affected, compared to the situation before the comment.
+The median number of lines changed jumps to 688 (from 105.5 before), and the number of files
+modified rises to a median of 14 (compared to 3 previously). These increases, spanning an
+order of magnitude, are mostly due to authors merging the destination branch into their feature
+branch after addressing the comment. This merge operation, meant to resolve conflicts and sync with
+the latest upstream changes, inflates the post-comment diffs with unrelated modifications,
+significantly distorting the actual footprint of the comment-driven changes.
+
+\begin{figure}[ht]
+	\centering
+	\begin{tikzpicture}
+		\begin{axis}[
+				width=0.85\linewidth,
+				height=7cm,
+				ybar,
+				bar width=3pt,
+				xlabel={Lines of Code Changed},
+				ylabel={Number of PRs},
+				grid=major,
+				title={Diff Size After the Comment (Unfiltered)},
+				ymin=0,
+				enlarge x limits=0.05,
+			]
+			\addplot+[
+				hist
+			] table [y index=0] {data/diff_after_sizes.dat};
+		\end{axis}
+	\end{tikzpicture}
+
+	\vspace{1em}
+
+	\begin{tikzpicture}
+		\begin{axis}[
+				width=0.85\linewidth,
+				height=7cm,
+				ybar,
+				bar width=3pt,
+				xlabel={Number of Files Changed},
+				ylabel={Number of PRs},
+				grid=major,
+				title={File Scope After the Comment (Unfiltered)},
+				ymin=0,
+				enlarge x limits=0.05,
+			]
+			\addplot+[
+				hist
+			] table [y index=0] {data/n_files_after.dat};
+		\end{axis}
+	\end{tikzpicture}
+
+	\caption{Top: histogram of post-comment diff sizes (in lines of code) without manual filtering. Bottom: number of files changed after the comment, across the full dataset.}
+	\label{fig:diff-after}
+\end{figure}
+
+\paragraph{Effect of Manual Selection on Post-Comment Diffs.}
+To isolate the portion of the diff that is truly relevant to the reviewer comment, a manual
+selection process was applied. Since it is both possible and strongly encouraged to specify the
+precise diff hunk corresponding to the implementation change, this step yields a much more focused
+view. The median number of lines drops to just 17, and 75\% of selected diffs fall below 27 lines.
+File count shrinks too: the median and mode are both 1, and the maximum is just 6. These results
+make it clear that most reviewer comments target small, localized changes. However, the default
+diffing process includes all modifications between the comment and the final PR state, including
+merge commits. A potential improvement to the pipeline would be to detect and exclude merge diffs,
+though this is risky: some merges might include essential fixes that make the current PR compile or
+pass tests. Nevertheless, the analysis of post-comment diffs would benefit from smarter filtering
+strategies to better reflect the intent and scope of the reviewer comment.
+
+\begin{figure}[ht]
+	\centering
+	\begin{tikzpicture}
+		\begin{axis}[
+				width=0.85\linewidth,
+				height=7cm,
+				ybar,
+				bar width=3pt,
+				xlabel={Lines of Code Changed},
+				ylabel={Number of PRs},
+				grid=major,
+				title={Diff Size After the Comment (Filtered)},
+				ymin=0,
+				enlarge x limits=0.05,
+			]
+			\addplot+[
+				hist
+			] table [y index=0] {data/diff_after_sizes_selected.dat};
+		\end{axis}
+	\end{tikzpicture}
+
+	\vspace{1em}
+
+	\begin{tikzpicture}
+		\begin{axis}[
+				width=0.85\linewidth,
+				height=7cm,
+				ybar,
+				bar width=3pt,
+				xlabel={Number of Files Changed},
+				ylabel={Number of PRs},
+				grid=major,
+				title={File Scope After the Comment (Filtered)},
+				ymin=0,
+				enlarge x limits=0.05,
+				xtick={1,2,3,4,5,6},
+			]
+			\addplot+[
+                % hist
+				hist={bins=6, data min=0.5, data max=6.5}
+                ] table [y index = 0] {data/n_files_after_selected.dat};
+		\end{axis}
+	\end{tikzpicture}
+
+	\caption{Top: histogram of post-comment diff sizes (in lines of code) after manual filtering. Bottom: number of files changed after the comment once irrelevant diffs have been removed.}
+	\label{fig:diff-after-filtered}
+\end{figure}
+
 \subsection{Summary \& Deliverables}
