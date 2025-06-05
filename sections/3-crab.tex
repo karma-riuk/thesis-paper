@@ -1222,4 +1222,31 @@ strategies to better reflect the intent and scope of the reviewer comment.
 	\label{fig:diff-after-filtered}
 \end{figure}
 
-\subsection{Summary \& Deliverables}
+\subsubsection{Summary and Deliverables}
+
+The dataset construction process was carried out in two phases. The first phase focused on a
+pre-filtered subset of 398 repositories, which allowed for fast iteration and manual inspection.
+This led to multiple refinements to the pipeline and produced a high-quality dataset, including 894
+pull requests that were manually validated for the comment generation task. The re-execution of the
+pipeline on this subset, guided by observed failure cases, helped identify edge conditions and
+improve the robustness of the overall system.
+
+In the second phase, the updated pipeline was applied to the full set of 4'795 repositories. This
+run served primarily as a validation of the improvements and as a way to better estimate the true
+distribution of eligible PRs. However, due to the size of the dataset and the absence of manual
+filtering due to time constraints, this larger output is not made publicly available.
+
+The following deliverables are provided as part of this work:
+\begin{itemize}
+    \item A manually validated dataset of 894 pull requests for the comment generation task,
+        complete with structural metadata and review context.
+    \item A detailed categorization of failure cases encountered during processing, used to guide
+        pipeline refinements and to inform future efforts.
+    \item An updated, more reliable extraction pipeline capable of handling large-scale repository
+        mining, made robust through iterative testing and feedback from the initial dataset.
+\end{itemize}
+
+The validated dataset is intended for public release and can serve as a benchmark for future work on
+learning from code review data. To support reproducibility and comparison, we also provide an online
+platform (see Section~\ref{sec:webapp}) that allows users to evaluate the performance of their
+models directly against this dataset.
