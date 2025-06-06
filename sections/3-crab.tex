@@ -559,9 +559,76 @@ interactions, with clearly identifiable suggestions and corresponding responses.
 approach allows for more reliable evaluation of models in tasks that require nuanced understanding
 of code review dynamics.
 
-\subsection{Paraphrases generation}
+\subsection{Paraphrase Generation}
 \label{sec:paraphrases}
-\todo{write paraphrases generation subsection}
+
+One of the key contributions of this work is the introduction of paraphrases into the dataset, which
+addresses a major limitation in existing benchmarks. Most prior work in this space evaluates model
+output using exact or near-exact string matching metrics such as BLEU or ROUGE. However, these
+metrics are highly sensitive to surface-level variations and fail to account for semantically
+equivalent outputs that differ in length or wording.
+
+For instance, consider the following real-world example. A reviewer commented:
+
+\begin{quote}
+	\textit{“Please make this one a variable as well.”}
+\end{quote}
+
+In response, a model predicted the following output:
+
+\begin{quote}
+	\textit{“Extract the building of the ResponseMessage to its own variable (in eclipse, select the
+		text, right-click > refactor > extract local variable / select code + shift + alt + L). This
+		will make the code a bit more readable, especially when you’ll be passing in other things besides
+		the ResponseMessage.”}
+\end{quote}
+
+While both comments clearly convey the same request, they differ substantially in structure,
+phrasing, and length. As a result, surface-level comparison metrics like BLEU score assign an
+unjustifiably low similarity score, even though the semantic equivalence is clear to a human
+reviewer.
+
+To mitigate this issue, we introduce a set of paraphrases for each reviewer comment in the dataset.
+These paraphrases are generated using a large language model (specifically, the \texttt{o4-mini}
+variant of ChatGPT) guided by a carefully designed prompt. The prompt instructs the model to
+generate up to ten paraphrases that preserve the original meaning exactly, while varying in
+verbosity and structure.
+
+The prompt used is as follows:
+
+\begin{quote}\ttfamily
+	You will be given a code change ("Code change") and a code review comment ("Reviewer comment")
+	from a reviewer who reviewed the code.\\
+	Generate as many non-trivial and meaningful paraphrases as possible (maximum 10) for the
+	reviewer's comment.\\
+	The comment refers to the part of the code identified by the special tag
+	\texttt{<commented\_line>}.\\
+	Each paraphrase should differ in length: include some extremely concise version of the comment,
+	some highly verbose version, and some that are roughly the same length—while always preserving
+	the original meaning exactly.\\
+	\\
+	Generate the paraphrase (and nothing else) in the following format:\\
+	\\
+	Paraphrase\#1: \textless comment\_paraphrase\textgreater\\
+	Paraphrase\#2: \textless comment\_paraphrase\textgreater\\
+	\ldots\\
+	Paraphrase\#10: \textless comment\_paraphrase\textgreater\\
+	\\
+	"Code change"\\
+	\textless code\_change\textgreater\\
+	\\
+	"Reviewer comment"\\
+	\textless reviewer\_comment\textgreater
+\end{quote}
+
+This setup ensures a diversity of phrasing that can better reflect the natural variability in human
+feedback. The generated paraphrases are manually reviewed to ensure they faithfully preserve the
+semantic content of the original comment.
+
+These paraphrases make it possible to compute similarity metrics, such as BLEU, against a richer set
+of reference outputs. This, in turn, provides a more accurate and tolerant evaluation of model
+predictions. Details on how paraphrases are used in the benchmark evaluation are provided in
+Section~\ref{sec:paraphrases-check}.
 
 \subsection{Dataset Schema \& Serialization}
 
@@ -1213,9 +1280,9 @@ strategies to better reflect the intent and scope of the reviewer comment.
 				xtick={1,2,3,4,5,6},
 			]
 			\addplot+[
-                % hist
+				% hist
 				hist={bins=6, data min=0.5, data max=6.5}
-                ] table [y index = 0] {data/n_files_after_selected.dat};
+			] table [y index = 0] {data/n_files_after_selected.dat};
 		\end{axis}
 	\end{tikzpicture}
 
@@ -1239,12 +1306,12 @@ filtering due to time constraints, this larger output is not made publicly avail
 
 The following deliverables are provided as part of this work:
 \begin{itemize}
-    \item A manually validated dataset of 894 pull requests for the comment generation task,
-        complete with structural metadata and review context.
-    \item A detailed categorization of failure cases encountered during processing, used to guide
-        pipeline refinements and to inform future efforts.
-    \item An updated, more reliable extraction pipeline capable of handling large-scale repository
-        mining, made robust through iterative testing and feedback from the initial dataset.
+	\item A manually validated dataset of 894 pull requests for the comment generation task,
+	      complete with structural metadata and review context.
+	\item A detailed categorization of failure cases encountered during processing, used to guide
+	      pipeline refinements and to inform future efforts.
+	\item An updated, more reliable extraction pipeline capable of handling large-scale repository
+	      mining, made robust through iterative testing and feedback from the initial dataset.
 \end{itemize}
 
 The validated dataset is intended for public release and can serve as a benchmark for future work on
