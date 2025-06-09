@@ -1,7 +1,229 @@
 \section{A Web App to Assess DL-Based Code Review via CRAB}
 \label{sec:webapp}
 
+To maximize the impact and usability of the CRAB benchmark, we developed a web-based application
+designed to facilitate the evaluation of deep learning models on code review tasks. The platform
+allows researchers to download task-specific datasets, upload model predictions, track progress, and
+retrieve detailed performance results.
+
 \subsection{Functional and Non-functional requirements}
+
+% TODO: change the way this is written, right now it's 
+% Download:
+%     |
+%     ------> Comment gen
+%     |
+%     ------> Code Refinement 
+% Upload
+%     |
+%     ------> Comment gen
+%     |
+%     ------> Code Refinement 
+% It would be better if it was
+% Comment Gen
+%     |
+%     ------> Download
+%     |
+%     ------> Upload
+% Code refinement
+%     |
+%     ------> Download
+%     |
+%     ------> Upload
+%
+% It should be easily doable by moving the text around
+% en plus, ca pourrait etre bien, de parler de l'interface, d'ajouter des screens, vu qu'on parle du
+% tableau des resultats
+
+\subsubsection{Dataset Download per Task}
+
+Users must be able to download the dataset corresponding to the specific task they want to benchmark
+their model on. The web interface allows the selection between two tasks: \emph{comment
+	generation} and \emph{code refinement}.
+
+\paragraph{Comment Generation Task}
+
+When benchmarking comment generation models, the user receives a JSON file with the following
+structure:
+
+\begin{minted}{json}
+{
+  "<id_of_the_instance>": {
+    "id": "<id_of_the_instance>",
+    "files": {
+      "<filename1>": "<content_of_file1_at_beginning_of_pr>",
+      "<filename2>": "<content_of_file2_at_beginning_of_pr>",
+      // ...
+    },
+    "diffs": {
+      "<filename1>": "<diff_of_file_1_to_get_code_state_before_comment>",
+      "<filename2>": "<diff_of_file_2_to_get_code_state_before_comment>",
+      // ...
+    }
+  }
+}
+\end{minted}
+
+This format includes the unique identifier of each benchmark instance, the state of the relevant
+files at the start of the pull request, and the diffs needed to understand the changes under review.
+This information enables models to generate review comments for the code prior to any feedback. For
+information on how to upload predictions, refer to Section~\ref{sec:upload}.
+
+\paragraph{Code Refinement Task}
+
+For code refinement, the user receives a JSON file with additional annotations describing the
+reviewer’s comment:
+
+\begin{minted}{json}
+{
+  "<id_of_the_instance>": {
+    "id": "<id_of_the_instance>",
+    "files": {
+      "<filename1>": "<content_of_file1_at_beginning_of_pr>",
+      "<filename2>": "<content_of_file2_at_beginning_of_pr>",
+      // ...
+    },
+    "diffs": {
+      "<filename1>": "<diff_of_file_1_to_get_code_state_before_comment>",
+      "<filename2>": "<diff_of_file_2_to_get_code_state_before_comment>",
+      // ...
+    },
+    "comments": [
+      {
+        "file": "<filename1>",
+        "body": "<comment_on_file1>",
+        "from_": "<starting_line_of_comment_range (if applicable, otherwise null)>",
+        "to": "<ending_line_of_comment_range (or comment line if no range)>"
+      }
+    ]
+  }
+}
+\end{minted}
+
+Note that the \path{comments} field will always contain exactly one comment. This reflects an
+intentional design decision made early in the dataset construction process: we restricted the
+dataset to pull requests where it is clear that the code changes following the comment were in
+response to that single comment. Handling multiple comments per pull request was deemed too complex
+at this stage, as it would require reliably assigning each diff hunk to the appropriate comment—a
+task that cannot be automated robustly with current tools. One potential improvement for future
+iterations would be to perform this assignment manually during the selection phase. Alternatively,
+one could attempt to automate the process by prompting a large language model, either hosted locally
+or remotely, to infer whether all comments were addressed by the final set of changes and to perform
+a best-effort mapping between comments and diffs. This approach would mirror the possible
+enhancement to the pipeline discussed in Section~\ref{sec:stat-expanded}, but comes with its own
+risks: LLMs may introduce false positives or negatives, which would undermine the benchmark's
+reliability. Maintaining a human element in the selection process is therefore essential to ensure
+the benchmark remains accurate, consistent, and trustworthy for empirical evaluation. While the
+pipeline and benchmarking logic have been written to support multiple comments in principle, several
+features would need further development to fully enable that functionality.
+
+\paragraph{Repository Context (Optional)}
+
+For both tasks, users have the option to download contextual information about the repository at the
+beginning of the pull request. By default, the archive they receive contains only the JSON file
+described above. If the user opts to include context, the archive will also contain a directory
+named \path{context}. Inside this directory, for each instance in the dataset, there will be a
+compressed archive named after the instance's \path{id}, containing the full state of the repository
+at the time the pull request was opened. This structure allows models to leverage project-wide
+information, beyond just the files directly touched by the pull request, enabling more sophisticated
+analysis and predictions.
+
+
+\subsubsection{Uploading Predictions}
+\label{sec:upload}
+
+The platform allows users to upload their model predictions for evaluation. To ensure compatibility
+with the benchmarking pipeline, each task enforces a strict and clearly defined input format.
+
+\paragraph{Comment Generation Task}
+
+Submissions for the comment generation task must consist of a single JSON object mapping each
+instance ID to the corresponding predicted comment. The expected format is:
+
+\begin{minted}{json}
+{
+    "<id1>": "<predicted_comment1>",
+    "<id2>": "<predicted_comment2>"
+}
+\end{minted}
+
+\noindent
+\textbf{Example:}
+
+\begin{minted}{json}
+{
+    "1234": "This method lacks null checks.",
+    "5678": "Consider renaming this variable for clarity."
+}
+\end{minted}
+
+Each comment should be a natural language string intended to emulate the behavior of a human
+reviewer given the code in that instance.
+
+Once predictions are submitted, the server evaluates them by computing the BLEU score of each
+predicted comment against both the original review comment and its paraphrases. As described in
+Section~\ref{sec:paraphrases}, incorporating paraphrases into the benchmark allows us to tolerate
+diverse but semantically equivalent outputs. This flexibility acknowledges that different phrasings
+can convey the same intent, which is critical for fair model evaluation.
+
+The table displayed to the user after the evaluation will only show the maximum BLEU score achieved
+for each prediction. This score is the highest among all BLEU scores computed with the original
+comment and its paraphrases. In addition, users can download a detailed report showing the full list
+of BLEU scores per instance. In this list, the first entry corresponds to the BLEU score against the
+original review comment, while the subsequent entries correspond to the paraphrases. For example, to
+retrieve the BLEU score for paraphrase at index~$i$, the user should look at position~$i+1$ in the
+score list.
+
+\paragraph{Code Refinement Task}
+
+For code refinement, submissions must follow a slightly more complex structure. The input must be a
+JSON object mapping each instance ID to a dictionary of modified files. Each file path (relative to
+the repository root) maps to the complete new content of that file. Only full file contents are
+accepted, partial diffs will likely cause compilation to fail. Furthermore, all paths must remain
+within the repository boundaries; any attempt to write to paths outside the project root leads to
+immediate rejection of the instance submission.
+
+\begin{minted}{json}
+{
+    "<id1>": {
+        "<path_file1>": "<content_file1>"
+    },
+    "<id2>": {
+        "<path_file2>": "<content_file2>",
+        "<path_file3>": "<content_file3>"
+    }
+}
+\end{minted}
+
+\noindent
+\textbf{Example:}
+
+\begin{minted}{json}
+{
+    "1234": {
+        "src/Main.java": "public class Main { /* updated code */ }"
+    },
+    "5678": {
+        "utils/Helper.java": "public class Helper { /* improved logic */ }",
+        "utils/Math.java": "public class Math { /* better maths */ }"
+    }
+}
+\end{minted}
+
+Once a submission is received, the server applies the predicted changes by writing each specified
+file content to disk, inside the relevant repository snapshot. A security check ensures that no file
+paths escape the repository scope. After the injection phase, the server attempts to compile the
+repository. If compilation succeeds, the test suite is executed.
+
+At each stage (i.e. file injection, compilation, and testing) failures are detected and logged. If
+any step fails, all subsequent steps are skipped for that instance. This conservative execution
+model avoids wasting resources (e.g., there's no reason to test a repository that failed to
+compile). The user-facing result table presents only the final success or failure status for each
+instance. However, a downloadable detailed report includes exact error messages for each failure.
+For example, if compilation fails, the report includes the output of the compilation command to help
+users understand what went wrong. This design helps participants debug their model behavior without
+requiring access to the backend or raw infrastructure.
+
 \subsection{Design}
 
 {\color{gray} Describe here the different components (e.g., Frontend, backend, db, etc) and how they
