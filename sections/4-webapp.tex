@@ -219,7 +219,7 @@ the instance submission.
     \label{lst:refinement-pred-format}
 \end{listing}
 
-\begin{listing}
+\begin{listing}[!ht]
     \textbf{Example:}
     \begin{minted}{json}
     {
@@ -249,6 +249,53 @@ instance. However, a downloadable detailed report includes exact error messages 
 For example, if compilation fails, the report includes the output of the compilation command to help
 users understand what went wrong. This design helps participants debug their model behavior without
 requiring access to the backend or raw infrastructure.
+
+
+\subsubsection{Tracking Evaluation Status}
+
+One feature that might not seem essential at first, but quickly proved necessary in practice, is the
+ability to track the progress of an ongoing evaluation process, particularly for the code refinement
+task.
+
+Intuitively, the comment generation task does not require progress tracking. Even for large
+submissions, the evaluation is nearly instantaneous. Each prediction is compared to the original
+comment and its paraphrases using a BLEU score, which is computationally cheap. These comparisons
+typically complete within milliseconds per instance, and the task scales well even for hundreds or
+thousands of inputs.
+
+In contrast, the code refinement task is considerably more demanding. It involves four sequential
+steps for each instance:
+\begin{enumerate}
+    \item Extracting the build handler (e.g., Maven or Gradle) for the repository.
+    \item Injecting the submitted changes into the appropriate files on disk.
+    \item Compiling the full project.
+    \item Executing the test suite.
+\end{enumerate}
+
+While the first two steps are relatively quick, despite involving I/O operations such as unpacking
+the repository state into a temporary directory and writing updated files to disk, they are still
+manageable and barely noticeable in isolation. However, compilation and testing are major sources of
+delay. These phases are highly dependent on the size and complexity of the project: larger
+repositories with many modules or dependencies can take a significant amount of time to compile and
+test.
+
+This latency introduces a practical issue: the user cannot be expected to wait idly in front of
+their browser for the evaluation to complete. The full evaluation of a code refinement benchmark
+submission can take a non-trivial amount of time (approximately \todoi{time of running full new
+benchmark on code refinement}), which makes the need for a robust tracking mechanism obvious.
+Furthermore, long-running tasks are susceptible to common disruptions such as browser refreshes,
+network instability, or even the user shutting down their machine.
+
+To address this, we implemented a persistent tracking system. When a user submits a code refinement
+benchmark for evaluation, they are issued a unique process identifier. This identifier can be used
+to query the current status of the evaluation via the web interface. Users can monitor progress in
+real time or retrieve the results after the process has completed. If the user closes their browser
+or disconnects, they can return later and provide the process ID to retrieve the results.
+
+Completed evaluations are stored on the server for one week. During this period, users can access
+their results at any time. After the retention window expires, the data is automatically deleted.
+This setup strikes a balance between system resource usage and user convenience, allowing flexible,
+asynchronous interaction with the benchmarking infrastructure.
 
 \subsection{Design}
 
