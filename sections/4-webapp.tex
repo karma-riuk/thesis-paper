@@ -38,31 +38,35 @@ retrieve detailed performance results.
 \subsubsection{Dataset Download per Task}
 
 Users must be able to download the dataset corresponding to the specific task they want to benchmark
-their model on. The web interface allows the selection between two tasks: \emph{comment
-	generation} and \emph{code refinement}.
+their model on. The web interface allows the selection between two tasks: \emph{comment generation}
+and \emph{code refinement}.
 
 \paragraph{Comment Generation Task}
 
-When benchmarking comment generation models, the user receives a JSON file with the following
-structure:
+When benchmarking comment generation models, the user receives a JSON file with a structure
+described in Listing~\ref{lst:com-gen-input}.
 
-\begin{minted}{json}
-{
-  "<id_of_the_instance>": {
-    "id": "<id_of_the_instance>",
-    "files": {
-      "<filename1>": "<content_of_file1_at_beginning_of_pr>",
-      "<filename2>": "<content_of_file2_at_beginning_of_pr>",
-      // ...
-    },
-    "diffs": {
-      "<filename1>": "<diff_of_file_1_to_get_code_state_before_comment>",
-      "<filename2>": "<diff_of_file_2_to_get_code_state_before_comment>",
-      // ...
+\begin{listing}[!ht]
+	\begin{minted}{json}
+    {
+      "<id_of_the_instance>": {
+        "id": "<id_of_the_instance>",
+        "files": {
+          "<filename1>": "<content_of_file1_at_beginning_of_pr>",
+          "<filename2>": "<content_of_file2_at_beginning_of_pr>",
+          // ...
+        },
+        "diffs": {
+          "<filename1>": "<diff_of_file_1_to_get_code_state_before_comment>",
+          "<filename2>": "<diff_of_file_2_to_get_code_state_before_comment>",
+          // ...
+        }
+      }
     }
-  }
-}
-\end{minted}
+    \end{minted}
+	\caption{JSON format of comment generation input}
+	\label{lst:com-gen-input}
+\end{listing}
 
 This format includes the unique identifier of each benchmark instance, the state of the relevant
 files at the start of the pull request, and the diffs needed to understand the changes under review.
@@ -72,33 +76,37 @@ information on how to upload predictions, refer to Section~\ref{sec:upload}.
 \paragraph{Code Refinement Task}
 
 For code refinement, the user receives a JSON file with additional annotations describing the
-reviewer’s comment:
+reviewer’s comment, as can be seen in Listing~\ref{lst:refinement-input}:
 
-\begin{minted}{json}
-{
-  "<id_of_the_instance>": {
-    "id": "<id_of_the_instance>",
-    "files": {
-      "<filename1>": "<content_of_file1_at_beginning_of_pr>",
-      "<filename2>": "<content_of_file2_at_beginning_of_pr>",
-      // ...
-    },
-    "diffs": {
-      "<filename1>": "<diff_of_file_1_to_get_code_state_before_comment>",
-      "<filename2>": "<diff_of_file_2_to_get_code_state_before_comment>",
-      // ...
-    },
-    "comments": [
-      {
-        "file": "<filename1>",
-        "body": "<comment_on_file1>",
-        "from_": "<starting_line_of_comment_range (if applicable, otherwise null)>",
-        "to": "<ending_line_of_comment_range (or comment line if no range)>"
+\begin{listing}[!ht]
+	\begin{minted}{json}
+    {
+      "<id_of_the_instance>": {
+        "id": "<id_of_the_instance>",
+        "files": {
+          "<filename1>": "<content_of_file1_at_beginning_of_pr>",
+          "<filename2>": "<content_of_file2_at_beginning_of_pr>",
+          // ...
+        },
+        "diffs": {
+          "<filename1>": "<diff_of_file_1_to_get_code_state_before_comment>",
+          "<filename2>": "<diff_of_file_2_to_get_code_state_before_comment>",
+          // ...
+        },
+        "comments": [
+          {
+            "file": "<filename1>",
+            "body": "<comment_on_file1>",
+            "from_": "<starting_line_of_comment_range (if applicable, otherwise null)>",
+            "to": "<ending_line_of_comment_range (or comment line if no range)>"
+          }
+        ]
       }
-    ]
-  }
-}
-\end{minted}
+    }
+    \end{minted}
+	\caption{JSON format of code refinement input}
+	\label{lst:refinement-input}
+\end{listing}
 
 Note that the \path{comments} field will always contain exactly one comment. This reflects an
 intentional design decision made early in the dataset construction process: we restricted the
@@ -138,24 +146,34 @@ with the benchmarking pipeline, each task enforces a strict and clearly defined 
 \paragraph{Comment Generation Task}
 
 Submissions for the comment generation task must consist of a single JSON object mapping each
-instance ID to the corresponding predicted comment. The expected format is:
+instance ID to the corresponding predicted comment. The expected format is described in
+Listing~\ref{lst:com-gen-pred-format} and a concrete example is given in
+Listing~\ref{lst:com-gen-pred-example}.
 
-\begin{minted}{json}
-{
-    "<id1>": "<predicted_comment1>",
-    "<id2>": "<predicted_comment2>"
-}
-\end{minted}
+\begin{listing}[!ht]
+    \begin{minted}{json}
+    {
+        "<id1>": "<predicted_comment1>",
+        "<id2>": "<predicted_comment2>"
+    }
+    \end{minted}
+    \caption{JSON format of predictions for comment generation}
+    \label{lst:com-gen-pred-format}
+\end{listing}
 
-\noindent
-\textbf{Example:}
 
-\begin{minted}{json}
-{
-    "1234": "This method lacks null checks.",
-    "5678": "Consider renaming this variable for clarity."
-}
-\end{minted}
+
+\begin{listing}[!ht]
+    \textbf{Example:}
+    \begin{minted}{json}
+    {
+        "1234": "This method lacks null checks.",
+        "5678": "Consider renaming this variable for clarity."
+    }
+    \end{minted}
+    \caption{Example of valid comment generation submission}
+    \label{lst:com-gen-pred-example}
+\end{listing}
 
 Each comment should be a natural language string intended to emulate the behavior of a human
 reviewer given the code in that instance.
@@ -178,37 +196,45 @@ score list.
 
 For code refinement, submissions must follow a slightly more complex structure. The input must be a
 JSON object mapping each instance ID to a dictionary of modified files. Each file path (relative to
-the repository root) maps to the complete new content of that file. Only full file contents are
-accepted, partial diffs will likely cause compilation to fail. Furthermore, all paths must remain
-within the repository boundaries; any attempt to write to paths outside the project root leads to
-immediate rejection of the instance submission.
+the repository root) maps to the complete new content of that file. The structure can be seen in
+Listing~\ref{lst:refinement-pred-format} and a concrete example of a valid submission in
+Listing~\ref{lst:refinement-pred-example}. Only full file contents are accepted, partial diffs will
+likely cause compilation to fail. Furthermore, all paths must remain within the repository
+boundaries; any attempt to write to paths outside the project root leads to immediate rejection of
+the instance submission.
 
-\begin{minted}{json}
-{
-    "<id1>": {
-        "<path_file1>": "<content_file1>"
-    },
-    "<id2>": {
-        "<path_file2>": "<content_file2>",
-        "<path_file3>": "<content_file3>"
+\begin{listing}[!ht]
+    \begin{minted}{json}
+    {
+        "<id1>": {
+            "<path_file1>": "<content_file1>"
+        },
+        "<id2>": {
+            "<path_file2>": "<content_file2>",
+            "<path_file3>": "<content_file3>"
+        }
     }
-}
-\end{minted}
+    \end{minted}
+    \caption{JSON format of predictions for code refinement}
+    \label{lst:refinement-pred-format}
+\end{listing}
 
-\noindent
-\textbf{Example:}
-
-\begin{minted}{json}
-{
-    "1234": {
-        "src/Main.java": "public class Main { /* updated code */ }"
-    },
-    "5678": {
-        "utils/Helper.java": "public class Helper { /* improved logic */ }",
-        "utils/Math.java": "public class Math { /* better maths */ }"
+\begin{listing}
+    \textbf{Example:}
+    \begin{minted}{json}
+    {
+        "1234": {
+            "src/Main.java": "public class Main { /* updated code */ }"
+        },
+        "5678": {
+            "utils/Helper.java": "public class Helper { /* improved logic */ }",
+            "utils/Math.java": "public class Math { /* better maths */ }"
+        }
     }
-}
-\end{minted}
+    \end{minted}
+    \caption{Example of valid submission for code refinement}
+    \label{lst:refinement-pred-example}
+\end{listing}
 
 Once a submission is received, the server applies the predicted changes by writing each specified
 file content to disk, inside the relevant repository snapshot. A security check ensures that no file
