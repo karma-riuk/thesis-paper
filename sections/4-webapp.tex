@@ -125,28 +125,28 @@ Listing~\ref{lst:com-gen-pred-format} and a concrete example is given in
 Listing~\ref{lst:com-gen-pred-example}.
 
 \begin{listing}[!ht]
-    \begin{minted}{json}
+	\begin{minted}{json}
     {
         "<id1>": "<predicted_comment1>",
         "<id2>": "<predicted_comment2>"
     }
     \end{minted}
-    \caption{JSON format of predictions for comment generation}
-    \label{lst:com-gen-pred-format}
+	\caption{JSON format of predictions for comment generation}
+	\label{lst:com-gen-pred-format}
 \end{listing}
 
 
 
 \begin{listing}[!ht]
-    \textbf{Example:}
-    \begin{minted}{json}
+	\textbf{Example:}
+	\begin{minted}{json}
     {
         "1234": "This method lacks null checks.",
         "5678": "Consider renaming this variable for clarity."
     }
     \end{minted}
-    \caption{Example of valid comment generation submission}
-    \label{lst:com-gen-pred-example}
+	\caption{Example of valid comment generation submission}
+	\label{lst:com-gen-pred-example}
 \end{listing}
 
 Each comment should be a natural language string intended to emulate the behavior of a human
@@ -178,7 +178,7 @@ boundaries; any attempt to write to paths outside the project root leads to imme
 the instance submission.
 
 \begin{listing}[!ht]
-    \begin{minted}{json}
+	\begin{minted}{json}
     {
         "<id1>": {
             "<path_file1>": "<content_file1>"
@@ -189,13 +189,13 @@ the instance submission.
         }
     }
     \end{minted}
-    \caption{JSON format of predictions for code refinement}
-    \label{lst:refinement-pred-format}
+	\caption{JSON format of predictions for code refinement}
+	\label{lst:refinement-pred-format}
 \end{listing}
 
 \begin{listing}[!ht]
-    \textbf{Example:}
-    \begin{minted}{json}
+	\textbf{Example:}
+	\begin{minted}{json}
     {
         "1234": {
             "src/Main.java": "public class Main { /* updated code */ }"
@@ -206,8 +206,8 @@ the instance submission.
         }
     }
     \end{minted}
-    \caption{Example of valid submission for code refinement}
-    \label{lst:refinement-pred-example}
+	\caption{Example of valid submission for code refinement}
+	\label{lst:refinement-pred-example}
 \end{listing}
 
 Once a submission is received, the server applies the predicted changes by writing each specified
@@ -240,10 +240,10 @@ thousands of inputs.
 In contrast, the code refinement task is considerably more demanding. It involves four sequential
 steps for each instance:
 \begin{enumerate}
-    \item Extracting the build handler (e.g., Maven or Gradle) for the repository.
-    \item Injecting the submitted changes into the appropriate files on disk.
-    \item Compiling the full project.
-    \item Executing the test suite.
+	\item Extracting the build handler (e.g., Maven or Gradle) for the repository.
+	\item Injecting the submitted changes into the appropriate files on disk.
+	\item Compiling the full project.
+	\item Executing the test suite.
 \end{enumerate}
 
 While the first two steps are relatively quick, despite involving I/O operations such as unpacking
@@ -271,9 +271,7 @@ their results at any time. After the retention window expires, the data is autom
 This setup strikes a balance between system resource usage and user convenience, allowing flexible,
 asynchronous interaction with the benchmarking infrastructure.
 
-\subsection{Design}
-
-\subsubsection{Frontend}
+\subsection{Frontend}
 \label{sec:frontend}
 
 Rather than adopting a complex and bloated frontend framework, we intentionally opted for a simple
@@ -284,10 +282,10 @@ interface, a minimal HTML design not only avoids unnecessary overhead but also e
 reliability and maintainability.
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth,cfbox=black .1pt 0pt]{entire-webiste.png}
-    \caption{Main web interface with all three user-facing sections visible}
-    \label{fig:full-page}
+	\centering
+	\includegraphics[width=\textwidth,cfbox=black .1pt 0pt]{entire-webiste.png}
+	\caption{Main web interface with all three user-facing sections visible}
+	\label{fig:full-page}
 \end{figure}
 
 The interface is divided into three main sections, each corresponding to one step in the user
@@ -298,7 +296,7 @@ shown in Figure~\ref{fig:full-page}.
 
 The first section allows users to download the input data corresponding to the benchmark tasks. A
 dropdown menu enables the selection between \textit{Comment Generation} and \textit{Code
-Refinement}. Once selected, the user can download a ZIP archive containing a JSON file in the
+	Refinement}. Once selected, the user can download a ZIP archive containing a JSON file in the
 structure described in Section~\ref{sec:req}, along with the optional repository context if
 selected. The context includes the full state of the repository at the beginning of the pull
 request, which can be useful for models that benefit from project-wide information.
@@ -311,10 +309,10 @@ frontend ensures that the uploaded file is correctly received and passed to the 
 is well-formed, the backend responds with a unique process identifier.
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=.9\textwidth]{upload-cropped.png}
-    \caption{Submission section showing the returned process ID after a successful upload}
-    \label{fig:upload-id}
+	\centering
+	\includegraphics[width=.9\textwidth]{upload-cropped.png}
+	\caption{Submission section showing the returned process ID after a successful upload}
+	\label{fig:upload-id}
 \end{figure}
 
 This ID is displayed directly beside the upload button, as shown in Figure~\ref{fig:upload-id}, and
@@ -329,10 +327,10 @@ with the returned ID. Upon submission, a live progress bar appears, indicating t
 the evaluation.
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{progress-bar-cropped.png}
-    \caption{Progress bar showing real-time status of the evaluation process}
-    \label{fig:progress-bar}
+	\centering
+	\includegraphics[width=0.9\textwidth]{progress-bar-cropped.png}
+	\caption{Progress bar showing real-time status of the evaluation process}
+	\label{fig:progress-bar}
 \end{figure}
 
 
@@ -345,19 +343,19 @@ results table.
 
 For the comment generation task, the results table includes:
 \begin{itemize}
-    \item The instance ID.
-    \item The submitted comment.
-    \item A boolean flag indicating whether the predicted comment targeted the correct file.
-    \item The distance (in lines) between the predicted comment range and the original.
-    \item The maximum BLEU score achieved across the original and paraphrased comments.
+	\item The instance ID.
+	\item The submitted comment.
+	\item A boolean flag indicating whether the predicted comment targeted the correct file.
+	\item The distance (in lines) between the predicted comment range and the original.
+	\item The maximum BLEU score achieved across the original and paraphrased comments.
 \end{itemize}
 
 \begin{figure}[H]
-    \centering
-    % \includegraphics[width=.9\textwidth]{comment-table-cropped.png}
-    \todo{take screenshot of comment gen table (with download button)}
-    \caption{Result summary table for comment generation predictions}
-    \label{fig:comment-table}
+	\centering
+	% \includegraphics[width=.9\textwidth]{comment-table-cropped.png}
+	\todo{take screenshot of comment gen table (with download button)}
+	\caption{Result summary table for comment generation predictions}
+	\label{fig:comment-table}
 \end{figure}
 
 Figure~\ref{fig:comment-table} shows the result summary. In the top-right corner of the table, a
@@ -371,17 +369,17 @@ to its paraphrases.
 
 The results table for the code refinement task is more concise. It includes:
 \begin{itemize}
-    \item The instance ID.
-    \item A boolean indicating whether compilation succeeded.
-    \item A boolean indicating whether all tests passed.
+	\item The instance ID.
+	\item A boolean indicating whether compilation succeeded.
+	\item A boolean indicating whether all tests passed.
 \end{itemize}
 
 \begin{figure}[H]
-    \centering
-    % \includegraphics[width=.9\textwidth]{refinement-table-cropped.png}
-    \todo{take screenshot of refinement table (with download button)}
-    \caption{Result summary table for code refinement predictions}
-    \label{fig:refinement-table}
+	\centering
+	% \includegraphics[width=.9\textwidth]{refinement-table-cropped.png}
+	\todo{take screenshot of refinement table (with download button)}
+	\caption{Result summary table for code refinement predictions}
+	\label{fig:refinement-table}
 \end{figure}
 
 Figure~\ref{fig:refinement-table} shows the results view for this task. The downloadable detailed
@@ -412,8 +410,222 @@ submissions will be rejected. Additionally, they are informed about the signific
 ID received after uploading their predictions. These modals serve as in-place documentation and
 reduce user friction, especially for first-time visitors.
 
-\subsection{Usage Scenarios}
 
-{\color{gray} Show via screenshots how the webapp works with a concrete example.}
-\label{sec:refinement} % NOTE: move this thing where it needs to be in the future
-\label{sec:paraphrases-check} % NOTE: move this thing where it needs to be in the future
+\subsection{Backend}
+
+\subsubsection{Framework Choice and Migration Rationale}
+
+The backend was originally implemented in JavaScript using the Express framework. This decision was
+made based on Express’s minimal setup requirements and the widespread familiarity with JavaScript
+for lightweight web servers. However, significant issues soon arose.
+
+First, although the syntax is somewhat similar to Python, the language differences meant rewriting
+some of the logic that already existed in the Python-based dataset builder. Second, and more
+critically, the JavaScript ecosystem introduced reliability issues. While searching for a BLEU score
+computation library, we identified a package called \path{bleu-score} \cite{bleu-score-npmjs}.
+Unfortunately, the library contained bugs and had not been updated since early 2023. Rather than
+rely on it, we reimplemented BLEU score computation manually to bypass the issue.
+
+The final breaking point came during the implementation of the code refinement evaluation. To ensure
+uniform results regardless of host system, we containerized the evaluation environment using Docker.
+At this stage, we discovered that most Docker-related Node.js libraries were either outdated or
+lacked the functionality we needed. Given these compounding issues, we abandoned Express in favor of
+Flask.
+
+Flask provided immediate benefits. The Python-based backend integrated seamlessly with existing
+components from the dataset builder. More importantly, robust and well-maintained libraries were
+readily available for both BLEU score computation and Docker container management. This transition
+significantly reduced complexity and improved reliability.
+
+\subsubsection{Overall Architecture}
+
+The backend follows a modular and extensible architecture centered around the Flask web framework.
+This design was chosen to promote clarity, maintainability, and seamless integration with the
+Python-based tooling developed throughout the project.
+
+At its core, the application defines an entry point that sets up the Flask server, applies CORS
+policies, and registers multiple route blueprints. These blueprints group related functionality
+under dedicated URL prefixes:
+\begin{itemize}
+	\item \path{/} and \path{/api/hello}: Health check and root endpoint, used primarily for basic
+	      server diagnostics.
+	\item \path{/answers}: Handles submission and status tracking for both comment generation and code
+	      refinement tasks.
+	\item \path{/datasets}: Provides download endpoints for the processed datasets.
+\end{itemize}
+
+A global setup step initializes the observer infrastructure (c.f. Section~\ref{sec:observer}). This
+includes scanning previously stored evaluation results, cleaning up incomplete or expired entries,
+and preparing the necessary directories for result caching. This ensures that even after server
+restarts, previously completed evaluations can still be retrieved by ID.
+
+Every response from the backend is formatted as JSON. This ensures the backend is easily consumable
+both by browser-based clients and by external tools or scripts making programmatic HTTP requests.
+This design enables seamless automation or integration with larger pipelines.
+
+The primary user-facing endpoints are located under the \path{/answers} blueprint. This component
+exposes a submission route, \path{/answers/submit/<task>}, where \path{<task>} can be either
+\path{comment} or \path{refinement}, corresponding to the two main evaluation types supported.
+
+Each submission consists of a JSON file containing either a list of proposed comments for specific
+code lines (comment generation) or a mapping of filenames to their modified content (code
+refinement). The backend first validates the structure of the uploaded file to ensure correctness.
+If valid, it wraps the parsed data in a new \path{Subject} object and submits it to the queue
+manager. The subject is assigned a unique ID and saved in an in-memory mapping for future access.
+
+Clients are provided with a URL pointing to \path{/answers/status/<id>}, where they can poll for
+updates or retrieve the final result once evaluation has completed. Optionally, a WebSocket
+connection can be established by the client using a unique socket identifier. This allows the
+backend to register a corresponding \path{SocketObserver} that receives live updates as the task
+progresses. If the client disconnects, its observer is unregistered to free resources.
+
+The backend maintains strict separation between task execution and client interaction. Evaluation
+functions such as BLEU score computation or Docker-based testing are functions that are completely
+agnostic of what surrounds them, they report their progress only via callback mechanisms. The
+subject object intercepts these callbacks and translates them into observer notifications or status
+updates.
+
+To summarize, the architecture consists of:
+\begin{enumerate}
+	\item A clean separation of concerns between routing, task execution, and client communication.
+	\item A subject-observer system enabling real-time progress tracking with on-demand observer
+	      registration.
+	\item A thread-pooled queue manager that ensures controlled parallelism and consistent resource
+	      usage.
+	\item Persistent result caching that allows evaluation results to survive restarts and be reused
+	      or inspected later.
+\end{enumerate}
+
+This setup provides a robust backend that supports asynchronous, real-time task evaluation in a
+scalable and modular fashion.
+
+
+\subsubsection{Observer Pattern and Queue Management}
+\label{sec:observer}
+
+A central requirement for the backend was the ability to track the progress of submitted tasks in
+real time, with support for multiple clients observing the same process from different devices or
+sessions. The solution to this challenge emerged naturally through the application of the observer
+design pattern.
+
+The observer pattern was implemented via two core abstractions: \path{Subject} and
+\path{Observer}. Each \path{Subject} represents a single evaluation task, either comment
+generation or code refinement. The \path{Observer} interface defines three callback
+methods: \path{updateStarted}, \path{updatePercentage}, and \path{updateComplete}, which are
+used to propagate state changes to registered observers. Concrete implementations of
+\path{Observer}, such as \path{SocketObserver}, encapsulate communication channels like
+WebSocket clients and use these callbacks to relay updates.
+
+Upon submission, a new subject is created and immediately associated with a unique identifier. This
+subject encapsulates the evaluation function as a callable, along with two internal callbacks: one
+for progress reporting and one for completion. Crucially, the evaluation logic is designed to be
+agnostic of its context: it does not concern itself with how the results are used or who is watching.
+It simply calls the progress and completion callbacks with appropriate values.
+
+The subject, in turn, translates these callbacks into observer notifications. When the task starts,
+all registered observers are informed. As progress is made (e.g., per-item BLEU score computation or
+per-step refinement testing), percentage updates are broadcast. When the task concludes, each
+observer receives a final result payload. These interactions are fully decoupled: observers can join
+or leave at any time without affecting the execution of the task.
+
+This flexible observer design allows late-joining clients to attach to ongoing processes and still
+receive meaningful updates. For example, if a subject is in the \path{PROCESSING} state, a newly
+registered observer will immediately be informed of the current progress percentage. If the subject
+has already completed, the result is returned directly without even registering the observer, as no
+further updates are necessary. Observers are explicitly unregistered once they receive final results
+to avoid memory leaks and stale references.
+
+To handle concurrency, a custom queue management system wraps the subjects and regulates their
+execution lifecycle. Submitting a subject to the backend does not trigger immediate execution.
+Instead, the subject is placed into a first-in-first-out queue managed by the \path{QueueManager}
+class. This manager uses Python’s \path{ThreadPoolExecutor} to cap the number of concurrently
+running evaluations, ensuring the system remains responsive and resource-safe.
+
+Each subject transitions through a well-defined state machine:
+\begin{itemize}
+	\item \path{CREATED}: The subject has been initialized but not yet enqueued.
+	\item \path{WAITING}: The subject is in the queue, waiting for an available execution thread.
+	\item \path{PROCESSING}: The task is actively running in a thread.
+	\item \path{COMPLETE}: The task has finished and the results are available.
+\end{itemize}
+
+When a subject enters the \path{WAITING} state, its position in the queue can be queried via the
+WebSocket interface or the HTTP status endpoint. This is particularly useful for long queues, as it
+allows users to anticipate when their task will begin. Once a thread becomes available, the subject
+is dequeued, transitions to \path{PROCESSING}, and its task is executed. Progress updates are
+issued as the evaluation proceeds, eventually culminating in a state change to \path{COMPLETE} and
+the caching of final results.
+
+The final design elegantly decouples task execution, progress tracking, and client communication. It
+allows real-time observability of complex processes while maintaining modularity and robustness. By
+separating concerns and embracing well-established design patterns, the system remains scalable and
+adaptable to future changes, such as the introduction of new evaluation types or alternative
+notification mechanisms.
+
+
+\subsubsection{Paraphrase Evaluation Pipeline}
+\label{sec:paraphrases-check}
+
+The paraphrase evaluation pipeline processes submissions aimed at generating natural language
+comments describing a code change. Each submission is a proposed comment intended to annotate a
+specific line range in a given file. The evaluation is designed to measure both the semantic
+similarity of the submission to a ground-truth comment and the contextual relevance of its placement
+in the code.
+
+Upon receiving a submission, the backend first matches it against the corresponding reference entry
+in the dataset using the provided identifier. The system then compares the proposed comment to a set
+of target comments associated with that dataset entry. This set includes the original human-written
+comment as well as a number of paraphrases generated during the dataset construction phase.
+
+The primary metric used is the BLEU score, a well-known automatic evaluation metric in natural
+language processing. For each target paraphrase, the BLEU score is computed against the proposed
+comment. The final result includes:
+\begin{itemize}
+	\item The highest BLEU score across all references.
+	\item The list of individual BLEU scores per paraphrase.
+	\item The original comment submission for traceability.
+	\item A binary flag indicating whether the submission was made on the correct file.
+	\item A distance metric estimating how close the submitted line range is to the target line range.
+\end{itemize}
+
+This evaluation is executed entirely within the Python backend using the \path{sacrebleu} library
+\cite{sacre-bleu}.
+As the evaluation proceeds, a percentage indicator is updated and used to notify any observers via
+the subject-notification infrastructure described earlier. Upon completion, results are returned
+either through polling or via WebSocket push notification.
+
+\subsubsection{Code Refinement Evaluation Pipeline}
+\label{sec:refinement}
+
+The code refinement evaluation pipeline processes submissions where users attempt to fix or improve
+code by modifying one or more files. These modifications are evaluated in a reproducible environment
+using Docker-based containerization to ensure consistency across machines and platforms.
+
+Each submission consists of a mapping from filenames to updated file contents. When the backend
+receives a submission, it identifies the corresponding dataset entry and retrieves the associated
+project archive. The archive captures the exact state of the repository at the moment the pull
+request was merged, ensuring that evaluations are performed on the finalized version of the code.
+
+The evaluation process proceeds through the following steps:
+\begin{enumerate}
+	\item A build handler is initialized for the project, tailored to its build system.
+	\item The proposed file changes are injected into the local copy of the project.
+	\item The modified project is compiled to ensure that the changes do not introduce syntax or build
+	      errors.
+	\item If compilation is successful, the project’s test suite is executed to validate the
+	      functional correctness of the changes.
+\end{enumerate}
+
+At each step, any failure is recorded along with an error message, and the evaluation for that
+submission is halted. Successful evaluations result in a dictionary that indicates the status of
+each step: file injection, compilation, and testing.
+
+Similar to the comment generation flow, the refinement evaluation uses progress callbacks to emit
+state updates to observers. A rough percentage is calculated based on progress through the four
+discrete steps: initialization, injection, compilation, and testing. Final results are cached and
+made available to the client once the evaluation concludes.
+
+This pipeline ensures fairness and reproducibility by isolating each evaluation in a controlled
+environment, thereby avoiding inconsistencies caused by external system dependencies or
+configuration mismatches.
+
