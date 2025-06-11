@@ -1094,7 +1094,7 @@ strength of the dataset.
 	\begin{tikzpicture}
 		\begin{axis}[
 				width=0.85\linewidth,
-				height=7cm,
+				height=5cm,
 				ybar,
 				bar width=3pt,
 				xlabel={Tokens per Comment},
@@ -1127,12 +1127,12 @@ case. Because both distributions are highly skewed, it is difficult to plot them
 compressing the visual scale. The histograms focus on the denser regions of the data to preserve
 readability.
 
-\begin{figure}[ht]
+\begin{figure}[!htbp]
 	\centering
 	\begin{tikzpicture}
 		\begin{axis}[
 				width=0.85\linewidth,
-				height=7cm,
+				height=5cm,
 				ybar,
 				bar width=3pt,
 				xlabel={Lines of Code Changed},
@@ -1153,7 +1153,7 @@ readability.
 	\begin{tikzpicture}
 		\begin{axis}[
 				width=0.85\linewidth,
-				height=7cm,
+				height=5cm,
 				ybar,
 				bar width=3pt,
 				xlabel={Number of Files Changed},
@@ -1172,6 +1172,7 @@ readability.
 	\caption{Top: histogram of diff sizes (in lines of code) before the comment. Bottom: number of files modified prior to the comment. Each bar shows how many PRs fall into a given size range.}
 	\label{fig:diff-before}
 \end{figure}
+\FloatBarrier
 
 \paragraph{Post-Comment Diff Size and Scope (Covered PRs Only).}
 Post-comment diffs are only relevant for PRs that are covered by tests, as these are the only
@@ -1184,12 +1185,12 @@ branch after addressing the comment. This merge operation, meant to resolve conf
 the latest upstream changes, inflates the post-comment diffs with unrelated modifications,
 significantly distorting the actual footprint of the comment-driven changes.
 
-\begin{figure}[ht]
+\begin{figure}[!htbp]
 	\centering
 	\begin{tikzpicture}
 		\begin{axis}[
 				width=0.85\linewidth,
-				height=7cm,
+				height=5cm,
 				ybar,
 				bar width=3pt,
 				xlabel={Lines of Code Changed},
@@ -1204,13 +1205,11 @@ significantly distorting the actual footprint of the comment-driven changes.
 			] table [y index=0] {data/diff_after_sizes.dat};
 		\end{axis}
 	\end{tikzpicture}
-
 	\vspace{1em}
-
 	\begin{tikzpicture}
 		\begin{axis}[
 				width=0.85\linewidth,
-				height=7cm,
+				height=5cm,
 				ybar,
 				bar width=3pt,
 				xlabel={Number of Files Changed},
@@ -1229,6 +1228,7 @@ significantly distorting the actual footprint of the comment-driven changes.
 	\caption{Top: histogram of post-comment diff sizes (in lines of code) without manual filtering. Bottom: number of files changed after the comment, across the full dataset.}
 	\label{fig:diff-after}
 \end{figure}
+\FloatBarrier
 
 \paragraph{Effect of Manual Selection on Post-Comment Diffs.}
 To isolate the portion of the diff that is truly relevant to the reviewer comment, a manual
@@ -1243,12 +1243,12 @@ though this is risky: some merges might include essential fixes that make the cu
 pass tests. Nevertheless, the analysis of post-comment diffs would benefit from smarter filtering
 strategies to better reflect the intent and scope of the reviewer comment.
 
-\begin{figure}[ht]
+\begin{figure}[!htbp]
 	\centering
 	\begin{tikzpicture}
 		\begin{axis}[
 				width=0.85\linewidth,
-				height=7cm,
+				height=5cm,
 				ybar,
 				bar width=3pt,
 				xlabel={Lines of Code Changed},
@@ -1269,7 +1269,7 @@ strategies to better reflect the intent and scope of the reviewer comment.
 	\begin{tikzpicture}
 		\begin{axis}[
 				width=0.85\linewidth,
-				height=7cm,
+				height=5cm,
 				ybar,
 				bar width=3pt,
 				xlabel={Number of Files Changed},
@@ -1290,6 +1290,7 @@ strategies to better reflect the intent and scope of the reviewer comment.
 	\caption{Top: histogram of post-comment diff sizes (in lines of code) after manual filtering. Bottom: number of files changed after the comment once irrelevant diffs have been removed.}
 	\label{fig:diff-after-filtered}
 \end{figure}
+\FloatBarrier
 
 \subsubsection{Summary and Deliverables}
 
