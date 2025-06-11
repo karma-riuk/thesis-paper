@@ -255,10 +255,10 @@ test.
 
 This latency introduces a practical issue: the user cannot be expected to wait idly in front of
 their browser for the evaluation to complete. The full evaluation of a code refinement benchmark
-submission can take a non-trivial amount of time (approximately \todoi{time of running full new
-benchmark on code refinement}), which makes the need for a robust tracking mechanism obvious.
-Furthermore, long-running tasks are susceptible to common disruptions such as browser refreshes,
-network instability, or even the user shutting down their machine.
+submission can take a non-trivial amount of time (approximately 3 hours), which makes the need for a
+robust tracking mechanism obvious. Furthermore, long-running tasks are susceptible to common
+disruptions such as browser refreshes, network instability, or even the user shutting down their
+machine.
 
 To address this, we implemented a persistent tracking system. When a user submits a code refinement
 benchmark for evaluation, they are issued a unique process identifier. This identifier can be used
