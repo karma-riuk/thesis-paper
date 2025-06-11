@@ -394,6 +394,23 @@ Both results tables are fully sortable by any column. This feature enables users
 outliers, inspect their worst- and best-performing instances, and iterate on their model behavior
 efficiently.
 
+\paragraph{User Guidance and Information Modals}
+
+To improve usability, the interface includes several interactive help elements designed to assist
+users in navigating the application without requiring external documentation. In the top-right
+corner of the page (Figure~\ref{fig:full-page}), an \textit{About} button opens a modal popup
+containing a high-level overview of the platform's purpose and functionality. This gives new users a
+clear understanding of what the tool does and how to get started.
+
+Each major section of the page (data download, prediction upload, and result retrieval) also
+includes an information button adjacent to its title. Clicking these buttons triggers
+context-specific modals that guide users through the functionality of the section. For the download
+section, the modal explains the task selection process and the structure of the downloadable
+dataset, including whether it includes repository context. For the upload section, users are
+reminded of the required JSON structure for each task, and warned that improperly formatted
+submissions will be rejected. Additionally, they are informed about the significance of the process
+ID received after uploading their predictions. These modals serve as in-place documentation and
+reduce user friction, especially for first-time visitors.
 
 \subsection{Usage Scenarios}
 
