@@ -1,2 +1,56 @@
 \section{Conclusions and Future Work}
-% Summarize, and list all things we didn’t do due to the lack of time.
+
+In this work, we have successfully attained our primary goal of creating a rigorously curated
+dataset of code review instances. After manual selection and validation, our comment generation
+dataset comprises 894 high-quality instances, and our code refinement dataset comprises 57
+instances. While we would have wished for a larger code refinement set, we have laid the groundwork
+for future efforts to improve upon this number.
+
+As noted in Sections \ref{sec:stat-small} and \ref{sec:stat-expanded}, these figures derive from an
+initial pre‐filtering of repositories: only 398 out of 4'795 total projects were retained because
+their latest commit used a supported build system (Maven or Gradle), compiled, and passed at least
+one test. This filter, while ensuring immediate reproducibility, significantly limits the scope of
+our corpus. Across all repositories, just 0.32\% of pull requests qualified for the code refinement
+task, versus 7.61\% within the pre‐filtered set; conversely, we uncovered 16'376 candidate PRs for
+comment generation in the full corpus (versus 1'704 pre‐filtered). Importantly, we halted the
+full-corpus pipeline after ten days of execution,processing roughly 300 projects, to inspect
+intermediate results, so the 16'376 figure is a lower bound and additional eligible PRs likely
+remain undiscovered. A promising avenue to boost code refinement instances would be to relax the
+``last-commit builds and tests'' requirement: by only enforcing build-system support and the presence
+of tests, we could include many more repositories while still guaranteeing that PRs culminate in a
+compilable, testable state.
+
+As discussed in Sections \ref{sec:pr-selection} and \ref{sec:dataset-download}, another enhancement
+would be to accommodate pull requests with multiple reviewer comments. This would require
+attributing each review‐induced code change to its corresponding comment, thereby generating
+multiple valid triplets per PR. Disentangling interleaved comments and overlapping edits poses a
+complex annotation challenge, but our tool's modular, containerized, and reproducible architecture
+is well suited to incorporate such extensions without major rework.
+
+On the tooling side, we fully implemented the benchmarking framework via our web application, which
+supports both comment generation and code refinement tasks.  Thanks to the language‐agnostic design
+of both the data‐construction pipeline and the webapp (Section \ref{sec:exec-env}), the system can
+compile, test, and evaluate submissions in any language or build system with minimal additional
+configuration.  This architecture ensures independent, containerized execution of each job, proof of
+its robustness and ease of extension to new ecosystems, and the integrated queuing system provides
+real‐time progress updates with minimal resource overhead.  Users can submit jobs, monitor results,
+and depart at will, enabling horizontal scaling to accommodate large numbers of concurrent
+evaluations while preserving administrative control under heavy load.  Future work could thus focus
+on adding out‐of‐the‐box support for languages beyond Java (e.g., Python, JavaScript, C++),
+broadening the benchmark's applicability.
+
+Although it was our initial plan to benchmark the performance of current state‐of‐the‐art models
+against our dataset, time constraints imposed by thesis deadlines prevented us from doing so. Such
+experiments would yield valuable insights into where our benchmark sits within the landscape of
+automated code review research, and would help identify practical improvements, both to the webapp's
+evaluation pipelines and to our dataset construction methodology. Importantly, there are no
+technical barriers preventing this assessment: both dataset and tool are fully functional and
+readily available. We therefore strongly encourage future users to leverage our dataset and
+benchmark platform to evaluate leading models, publish comparative results, and drive further
+advances in automated code review.
+
+In closing, this thesis contributes a novel, high‐quality benchmark and a flexible evaluation tool
+that together establish a solid empirical foundation for the development of next‐generation code
+review automation. By providing both curated data and an extensible evaluation environment, we hope
+to accelerate research in comment generation and code refinement, and to inspire future work that
+pushes the boundaries of automated software quality assurance.
