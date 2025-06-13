@@ -43,7 +43,6 @@
 \subtitle{Advisor: Prof. Grabriele Bavota\\Co-advisor: Dr. Rosalia Tufano}
 
 \abstract{
-    {\color{red} Readapt}
 Code review is an essential practice in software development, enhancing code
 quality and maintainability, but it can be resource-intensive and, as a consequence, expensive. To reduce these
 costs, researchers have developed code review automation tools that leverage
@@ -59,14 +58,15 @@ In such cases, even if the model predicts the correct code change for the given 
 against a wrong target. Although several researchers have made efforts to
 clean the datasets, recent work revealed that problematic instances still make
 up a significant portion of the data. %As a result, evaluating models on such data does not accurately represent their true capabilities.
-To address these issues, we aim to propose the first high-quality benchmark for
-code review automation. This benchmark will consist of carefully curated
+To address these issues, we propose the first high-quality benchmark for
+code review automation. This benchmark consists of carefully curated
 \subCode, \revComment, \revCode triplets, where each comment will explicitly point out
 %'before-comment-after' triplets, where each comment will explicitly address a
 to an issue in the \subCode and is validated to ensure that the \revCode
 accurately implements the requested modification by implementing
 rigorous checks to confirm the relevance of comments and the correctness of code
-refinements. Also, the benchmark will account for the possibility that the same quality issue can be expressed with different wording (important for the ``quality check'' task) and that the same reviewer's comment can be addressed with semantically equivalent implementations (important for the ``code refinement'').
+refinements. Also, the benchmark will account for the possibility that the same quality issue can be
+expressed with different wording (important for the ``comment generation'' task) and that the same reviewer's comment can be addressed with semantically equivalent implementations (important for the ``code refinement'').
 %The triplets will be
 %classified based on the contextual information required to address the comment,
 %such as method-only, file-only, project-only or external-dependencies.
@@ -78,7 +78,6 @@ predictions and receive evaluations with our benchmark.%, setting a new standard
 
 \maketitle
 
-\listoftodos
 \input{sections/1-intro}
 \input{sections/2-state-of-the-art}
 \input{sections/3-crab}
