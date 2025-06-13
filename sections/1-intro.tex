@@ -1,6 +1,5 @@
 % !TEX root = ../main.tex
 \section{Introduction}
-\todo{Readapt}
 Code review is a cornerstone of modern software engineering, serving to enhance
 code quality, maintainability, and collaboration among developers. Despite its critical
 role, the process is expensive and labor-intensive, which has led to the development
@@ -34,10 +33,10 @@ Such inconsistencies and limitations obscure the real capabilities of the models
 
 This thesis will try to address these challenges by introducing a high-quality
 benchmark designed to evaluate code review automation approaches.
-Specifically, it focuses on two critical tasks: (1) code quality check, \ie
+Specifically, it focuses on two critical tasks: (1) comment generation, \ie
 generating natural language review comments for a given piece of code that emulate
 human reviewers' comments by identifying problems in the code and making suggestions
-for improvement, and (2) revised code generation, \ie generating a piece of code that
+for improvement, and (2) code refinement, \ie generating a piece of code that
 implements the reviewers' suggestions for a given piece of code.
 
 The proposed benchmark will consist of meticulously curated triplets (\subCode)
@@ -56,9 +55,31 @@ programming language and aiming to compile 500 rigorously validated triplets,
 this work aspires to provide a reliable foundation for empirical evaluations,
 ultimately advancing the state of automated code review.
 
-\subsection{Thesis structure}
+\subsection{Thesis Structure}
 
-\todoii{TODO}{thesis structure}
+This thesis is organized into five chapters, each contributing to the overarching goal of advancing
+automated code review through benchmark design and evaluation tooling.
 
-{\color{gray}A simple bullet list saying: In Chapter 2, we present the state of
-	the art in the field of ... In Chapter 3...}
+\begin{itemize}
+	\item \textbf{Chapter 2 - State of the Art}: This chapter provides a comprehensive overview of
+	      existing research on code review automation. It covers key tasks such as code change
+	      analysis, comment generation, code refinement, and review quality assessment. It also
+	      surveys prominent benchmarks used to evaluate deep learning (DL) models for code-related
+	      tasks, identifying their limitations and motivating the need for a more targeted benchmark.
+
+	\item \textbf{Chapter 3 - CRAB: Code Review Automated Benchmark}: This chapter introduces CRAB,
+	      a new benchmark designed to evaluate DL-based tools for automated code review. It details
+	      the methodology for dataset construction, including repository selection, automated and
+	      manual filtering, test and build validation, and paraphrase generation for reviewer
+	      comments. The dataset schema, serialization formats, and curated statistics are also
+	      discussed.
+
+	\item \textbf{Chapter 4 - A Web App to Assess DL-Based Code Review via CRAB}: This chapter
+	      describes the design and implementation of a web application that allows researchers to
+	      interact with and evaluate models using the CRAB dataset. It presents the functional and
+	      non-functional requirements, user interface, backend architecture, and evaluation pipelines
+	      for both comment generation and code refinement.
+
+	\item \textbf{Chapter 5 - Conclusions and Future Work}: \todo{Section 5 still needs to be
+		      written}
+\end{itemize}
