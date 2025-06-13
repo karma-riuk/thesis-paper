@@ -51,6 +51,7 @@ We applied minimal filtering beyond that. A small number of repositories were ma
 during processing, mostly due to extreme build times or authentication issues.
 
 \subsubsection{Pull Request Selection}
+\label{sec:pr-selection}
 
 For each selected repository, we searched for pull requests that reflect a clean and minimal review
 interaction. Specifically, we looked for PRs that:
@@ -411,6 +412,7 @@ frequently contain unit or integration tests. This dual approach increases the r
 detection across a broad set of repository structures.
 
 \subsubsection{Execution Environment}
+\label{sec:exec-env}
 
 To ensure reproducibility, consistency, and isolation from the host system, all compilation and test
 operations are executed within Docker containers. Two container environments are maintained,
@@ -797,6 +799,7 @@ manual filtering was applied to this version, the insights gained from the first
 useful baseline for interpreting its structure and expected failure patterns.
 
 \subsubsection{Initial Dataset: Pre-filtered Repositories}
+\label{sec:stat-small}
 
 Before scaling up to a broader corpus, we conducted an initial run of the dataset construction
 process on a smaller, pre-filtered set of repositories. Table~\ref{tab:initial-distribution}
@@ -812,8 +815,8 @@ phases, but only 4.87\% were covered by tests.
 		\toprule
 		\textbf{Subset}                                        & \textbf{Count} & \textbf{Percentage} \\
 		\midrule
-		Total dataset                                          & 1704           & 100.00\%            \\
-		Had issues during processing                           & 1094           & 64.20\%             \\
+		Total dataset                                          & 1'704           & 100.00\%            \\
+		Had issues during processing                           & 1'094           & 64.20\%             \\
 		Not code-related                                       & 456            & 26.76\%             \\
 		Builds and passes tests, not covered                   & 71             & 4.17\%              \\
 		Builds and passes tests, covered by tests\footnotemark & 83             & 4.87\%              \\
