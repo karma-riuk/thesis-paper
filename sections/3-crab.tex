@@ -948,6 +948,9 @@ guidelines, which could lead to cleaner, more meaningful PRs. However, this stra
 backfired. Projects with high visibility also tend to be larger, more complex, and more prone to use
 custom or non-standard build systems, making them harder to compile and test automatically.
 
+The full run was executed over the course of 10 days using five concurrent threads. During this
+time, the system managed to process only about 300 repositories, revealing the hidden cost of
+attempting to extract usable data from large-scale, real-world projects.
 Table~\ref{tab:expanded-distribution} shows the final breakdown of this expanded dataset. Out of
 16'376 processed pull requests, 75.89\% encountered issues during processing. Only 0.32\% passed the
 full build and test phase and were covered by tests: just 52 PRs across the entire run. This
@@ -971,15 +974,13 @@ heterogeneous codebases.
 	\label{tab:expanded-distribution}
 \end{table}
 
-The full run was executed over the course of 10 days using five concurrent threads. During this
-time, the system managed to process only about 300 repositories, revealing the hidden cost of
-attempting to extract usable data from large-scale, real-world projects. The low yield of covered
-entries is partly explained by the nature of the selected repositories. In particular, 2'714 pull
-requests (16.65\%) failed because the pipeline could not locate a recognizable build file. Another
-4'612 (28.29\%) failed at the compilation stage. These numbers are not unexpected, as the
-repositories were drawn directly from GHS without any guarantee that they used supported build
-systems. Given the size and complexity of many of these projects, it's likely that a significant
-portion rely on custom build setups that are difficult or impossible to replicate automatically.
+The low yield of covered entries is partly explained by the nature of the selected repositories. In
+particular, 2'714 pull requests (16.65\%) failed because the pipeline could not locate a
+recognizable build file. Another 4'612 (28.29\%) failed at the compilation stage. These numbers are
+not unexpected, as the repositories were drawn directly from GHS without any guarantee that they
+used supported build systems. Given the size and complexity of many of these projects, it's likely
+that a significant portion rely on custom build setups that are difficult or impossible to replicate
+automatically.
 
 In hindsight, this ordering strategy, based purely on stargazer count, proved suboptimal. Although
 it increased the likelihood of encountering high-quality review interactions, it also severely
