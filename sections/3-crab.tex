@@ -846,10 +846,15 @@ phases, but only 4.87\% were covered by tests.
 	desiderati (per il code refinement). Prima funzionava perché i numeri erano decrescenti, ma ora
 	l’ultima ha un valore più alto della penultima... Che ne pensa?}
 
-To better assess data quality, a manually curated subset of 894 entries was extracted from this
-initial pool. Table~\ref{tab:manual-selection-distribution} shows the composition of this manually
-selected group. The distribution of processing issues and coverage is broadly similar. One key
-insight is that the proportion of test-covered PRs increases slightly, up to 7.61\%.
+
+To better assess data quality, we manually reviewed the full set of 1'704 entries extracted in the
+initial run. Each entry was tagged based on whether the \revComment actually suggested a meaningful
+code change. The outcome of this annotation process was a curated subset of 894 entries, containing
+only those instances where the comment was determined to be actionable.
+Table~\ref{tab:manual-selection-distribution} shows the composition of this manually selected group.
+The distribution of processing issues and coverage is broadly similar to the full set, but one
+notable difference is a slight increase in the proportion of test-covered PRs, which rises to
+7.61\%.
 
 \begin{table}[ht]
 	\centering
