@@ -828,24 +828,18 @@ phases, but only 4.87\% were covered by tests.
 	\centering
 	\begin{tabular}{lrr}
 		\toprule
-		\textbf{Subset}                                        & \textbf{Count} & \textbf{Percentage} \\
+		\textbf{Subset}                           & \textbf{Count} & \textbf{Percentage} \\
 		\midrule
-		Total dataset                                          & 1'704          & 100.00\%            \\
-		Had issues during processing                           & 1'094          & 64.20\%             \\
-		Not code-related                                       & 456            & 26.76\%             \\
-		Builds and passes tests, not covered                   & 71             & 4.17\%              \\
-		Builds and passes tests, covered by tests\footnotemark & 83             & 4.87\%              \\
+		Total dataset                             & 1'704          & 100.00\%            \\
+		Had issues during processing              & 1'094          & 64.20\%             \\
+		Not code-related                          & 456            & 26.76\%             \\
+		Builds and passes tests, not covered      & 71             & 4.17\%              \\
+		Builds and passes tests, covered by tests & 83             & 4.87\%              \\
 		\bottomrule
 	\end{tabular}
 	\caption{Breakdown of initial dataset (1'704 PRs)}
 	\label{tab:initial-distribution}
 \end{table}
-
-\footnotetext{Domanda per Bavota: non so in che ordine mettere le righe della tabella. L’idea è
-	partire dal totale e togliere le parti non rilevanti, arrivando all’ultima riga con i risultati
-	desiderati (per il code refinement). Prima funzionava perché i numeri erano decrescenti, ma ora
-	l’ultima ha un valore più alto della penultima... Che ne pensa?}
-
 
 To better assess data quality, we manually reviewed the full set of 1'704 entries extracted in the
 initial run. Each entry was tagged based on whether the \revComment actually suggested a meaningful
