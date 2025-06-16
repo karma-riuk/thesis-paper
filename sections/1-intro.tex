@@ -17,7 +17,7 @@ this process is not entirely reliable. For example, several instances extracted
 in this way have revised code that does not implement the associated comments
 (reviewers' suggestions may be discussed elsewhere and ultimately not accepted)
 or contain comments that do not accurately describe the problem found (such as
-comments that simply refer to previous comments, e.g., "same here").
+comments that simply refer to previous comments, e.g., "same here" \textcolor{red}{<-- (minor) questi tipi di commenti in realtà normalmente vengono fatti fuori da euristiche durante il cleaning. Forse metterei un esempio diverso}).
 
 Furthermore, the metrics available today only allow a direct syntactic comparison with targets,
 considering all those predictions that use different tokens than the target as wrong. For instance,
@@ -39,7 +39,7 @@ human reviewers' comments by identifying problems in the code and making suggest
 for improvement, and (2) code refinement, \ie generating a piece of code that
 implements the reviewers' suggestions for a given piece of code.
 
-The proposed benchmark will consist of meticulously curated triplets (\subCode)
+The proposed benchmark will consist of meticulously curated triplets (\subCode) \textcolor{red}{<-- why this (\subCode) here?}
 where \revComment will be validated to highlight specific issues in \subCode and
 \revCode will be validated to comprehensively address these issues.
 
