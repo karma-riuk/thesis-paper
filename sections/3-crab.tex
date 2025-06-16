@@ -37,8 +37,8 @@ useful for evaluating future models.
 \subsubsection{Repository Sampling}
 
 We began by querying the \textit{GHS} dataset~\cite{Dabic:msr2021data}, a large-scale repository
-mining platform that indexes metadata for over 700'000 GitHub projects. Using the web interface \textcolor{red}{at
-\url{https://seart-ghs.si.usi.ch}, (<--- it is not necessary to put the link in the text. You can put it as a footnote)} we applied two simple filters:
+mining platform that indexes metadata for over 700'000 GitHub projects. Using the web
+interface\footnote{\url{https://seart-ghs.si.usi.ch}} we applied two simple filters:
 
 \begin{itemize}
 	\item The repository must have had at least 100 pull requests.
@@ -152,8 +152,8 @@ maintaining correctness.
 Figure~\ref{fig:pipeline} presents a simplified overview of the pipeline’s control flow. The diagram
 groups the processing steps into three main phases: \textit{Setup}, \textit{Build \& Validation
 	Assessment}, and \textit{Finalization}. There is also a decision point between \textit{Setup} and
-\textit{Build \& Validation Assessment}, \textcolor{red}{\textit{Eligibility Check}}, that short-circuits unnecessary work when the comment is not
-related to code.
+\textit{Build \& Validation Assessment}, \textit{Eligibility Check}, that short-circuits unnecessary
+work when the comment is not related to code.
 
 \begin{itemize}
 	\item \textbf{Setup}: This phase includes cloning the repository, extracting the diffs and

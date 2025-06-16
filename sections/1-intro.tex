@@ -16,8 +16,23 @@ extract the code before the review (\subCode), the reviewers' comments
 this process is not entirely reliable. For example, several instances extracted
 in this way have revised code that does not implement the associated comments
 (reviewers' suggestions may be discussed elsewhere and ultimately not accepted)
-or contain comments that do not accurately describe the problem found (such as
-comments that simply refer to previous comments, e.g., "same here" \textcolor{red}{<-- (minor) questi tipi di commenti in realtà normalmente vengono fatti fuori da euristiche durante il cleaning. Forse metterei un esempio diverso}).
+or contain comments that do not accurately ask any change for the user, like the following:
+
+\begin{itemize}
+    \item ``Note here that this fixes a bug''
+    \item ``I'll add Integer handling later with another PR''
+    \item ``Thanks for the PR :)''
+\end{itemize}
+
+In the first case, a user (possibly the author or a collaborator) highlights a part of the code to
+indicate where the bug was fixed, likely for the benefit of reviewers. In the second, a change is
+mentioned but clearly marked as out of scope for the current pull request. The third is simply a
+thank-you message. While the latter kind of comment might be easy to filter out, in practice, it’s
+not so straightforward. We've seen that some reviewers use similar language as a preamble before
+suggesting changes, making automatic detection unreliable. This illustrates a broader issue:
+extracting reviewer comments from pull requests without manual filtering introduces noise, and such
+noisy examples should not be used to evaluate models. Model evaluation should rely on well-defined,
+actionable cases.
 
 Furthermore, the metrics available today only allow a direct syntactic comparison with targets,
 considering all those predictions that use different tokens than the target as wrong. For instance,
@@ -39,9 +54,9 @@ human reviewers' comments by identifying problems in the code and making suggest
 for improvement, and (2) code refinement, \ie generating a piece of code that
 implements the reviewers' suggestions for a given piece of code.
 
-The proposed benchmark will consist of meticulously curated triplets (\subCode) \textcolor{red}{<-- why this (\subCode) here?}
-where \revComment will be validated to highlight specific issues in \subCode and
-\revCode will be validated to comprehensively address these issues.
+The proposed benchmark will consist of meticulously curated triplets where \revComment will be
+validated to highlight specific issues in \subCode and \revCode will be validated to comprehensively
+address these issues.
 
 To account for natural language variability, reviewers' comments will be accompanied by
 alternative paraphrases that maintain their main intent; while to consider as correct also
