@@ -12,13 +12,22 @@ independently.
 
 \textcolor{blue}{Se hai tempo e voglia potresti fare qui uno schemino che faccia vedere ad alto livello un po' tutto il processo di costruzione dei benchmark come overview.}
 
-In this section, we describe the construction of a high-quality Java-only \textcolor{red}{(<-- questo non è del tutto corretto. In realtà per il task comment generation abbiamo collezionato anche istanze che fanno riferimento a file che non sono Java, giusto?)} dataset of code-review
-triplets. Each triplet comprises three elements: the code snapshot before the review, the natural
-language review comment and the revised code after that change has been applied. Our work supports
-two complementary benchmarks: the first is review comment generation, \textcolor{red}{(<-- sembra un po' strano com'è scritto perché sembra che il benchmark sia il task. Forse direi qualcosa del tipo "supports two complementary benchmarks for two different tasks" and then explain tasks)} asks a model to predict the
-review comment given the pre-review code \textcolor{red}{(eviterei di usare altri termini tipo questo "pre-review code". Descrivi i task usando i termini delle triple così da essere consistenti e non creare ambiguità. Also, maybe repeat here what is the goal: that we want to build a dataset consisting of triplets ... )}; the second is code refinement, a strict subset of the
-first, asks a model to generate the revised code that implements the suggestion.
+In this section, we describe the construction of a high-quality dataset of code review triplets,
+each composed of some \subCode, a \revComment, and some \revCode. The dataset is designed to support
+two complementary benchmarks, each targeting a different task: comment generation and code
+refinement. The comment generation task asks a model to generate a \revComment that highlights
+issues and suggests improvements, given a \subCode. The code refinement task instead takes both the
+\subCode and the \revComment as input and requires the model to produce a \revCode that correctly
+implements the suggested change.
 
+A key design decision is that every included \revComment must explicitly suggest a meaningful
+modification to the code. As a result, all triplets are valid instances for the comment generation
+benchmark. The code refinement benchmark is built as a strict subset of this data: it only includes
+triplets where the \revCode implements the suggestion in the \revComment. Since the refinement task
+depends on compiling, testing, and verifying coverage, we limit it to triplets where the comment
+refers to a Java file. However, this restriction does not apply to the comment generation benchmark.
+To reflect the diversity of real pull requests, we accept any triplet where the comment is
+actionable, regardless of the file type involved.
 
 We focused on Java projects and aimed for high quality over quantity. That means we only kept
 examples that are self-contained, testable, and likely to be meaningful. As a starting point, we
@@ -161,9 +170,12 @@ work when the comment is not related to code.
 	      a reproducible view of the pull request before and after the review.
 
 	\item \textbf{Eligibility Check}: Before performing more expensive operations, the pipeline
-	      checks whether the comment targets a Java file. If it does not, the system skips the
-	      build phase entirely and proceeds directly to finalization, as test and build analysis
-	      are not relevant.
+	      checks whether the comment targets a Java source file. This distinction is important because
+	      test and build validation are only required for the code refinement task. If the comment
+	      does not refer to a Java file, the pipeline skips the build phase entirely and proceeds
+	      directly to finalization. These entries are still included in the comment generation
+	      dataset, since the task only requires that the \revComment suggests a meaningful change,
+	      regardless of the file type involved.
 
 	\item \textbf{Build \& Test Assessment}: For code-related comments, the pipeline identifies the build system,
 	      attempts to compile the code, runs the test suite, and tries to generate code coverage using
