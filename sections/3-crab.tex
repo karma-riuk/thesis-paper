@@ -14,9 +14,9 @@ In this section, we describe the construction of a high-quality dataset of code 
 each composed of some \subCode, a \revComment, and some \revCode. The dataset is designed to support
 two complementary benchmarks, each targeting a different task: comment generation and code
 refinement. The comment generation task asks a model to generate a \revComment that highlights
-issues and suggests improvements, given a \subCode. The code refinement task instead takes both the
-\subCode and the \revComment as input and requires the model to produce a \revCode that correctly
-implements the suggested change.
+issues and suggests improvements, given some \subCode. The code refinement task instead takes both
+the \subCode and the \revComment as input and requires the model to produce some \revCode that
+correctly implements the suggested change.
 
 \begin{figure}[!htbp]
 	\centering
@@ -105,7 +105,7 @@ later in Section~\ref{sec:manual-selection}.
 
 \subsection{Automated Extraction Pipeline}
 \label{sec:pipeline}
-Transforming raw pull requests into usable training examples requires more than just scraping
+Transforming raw pull requests into usable instances requires more than just scraping
 metadata from GitHub. It involves carefully extracting code changes, associating them with reviewer
 comments, validating their build and testability, and preserving the relevant context along the way.
 To achieve this at scale and with high fidelity, we developed a robust, modular, and fully automated
@@ -308,8 +308,8 @@ filtering and debugging later on.
 
 Every processed pull request results in a dataset entry, even if a phase failed. This is a
 deliberate design choice: entries that fail the build phase may still contain useful review comments
-for tasks such as comment generation. By capturing the full trace of each pull request—including
-what succeeded, what failed, and why—the pipeline produces a dataset that is not only rich in
+for tasks such as comment generation. By capturing the full trace of each pull request (including
+what succeeded, what failed, and why) the pipeline produces a dataset that is not only rich in
 content but also transparent and debuggable.
 
 \subsubsection{Failure Handling and Debuggability}
@@ -408,8 +408,8 @@ had to be understood by directly reading its source code. Nonetheless, once thes
 accounted for, the client operates smoothly, and the pipeline is able to run unattended for extended
 periods, managing its own retries and pacing.
 
-These design decisions—automated rate limit handling, layered caching, and task
-checkpointing—combine to make the pipeline not just scalable in theory, but practically usable for
+These design decisions — automated rate limit handling, layered caching, and task
+checkpointing — combine to make the pipeline not just scalable in theory, but practically usable for
 large-scale, real-world dataset construction.
 
 \subsection{Build, Test \& Coverage}
@@ -498,9 +498,9 @@ developers themselves judge correctness: not by form, but by function.
 
 In summary, this phase adds significant value to the dataset by grounding it in real, executable
 code, and by enabling flexible, semantically meaningful evaluation. Despite the technical challenges
-involved—such as inconsistent configurations, incomplete test setups, and structural complexity—this
-approach provides a much more powerful basis for training and evaluating automated code refinement
-systems.
+involved — such as inconsistent configurations, incomplete test setups, and structural complexity —
+this approach provides a much more powerful basis for training and evaluating automated code
+refinement systems.
 
 \subsection{Manual Selection}
 \label{sec:manual-selection}
@@ -589,7 +589,7 @@ process.
 
 The decision to include a manual selection step was not an afterthought, but a deliberate design
 choice. Prior work has shown that fully automated dataset construction methods often introduce a
-significant amount of noise—whether due to misclassified comments, ambiguous code changes, or
+significant amount of noise — whether due to misclassified comments, ambiguous code changes, or
 incidental modifications unrelated to reviewer feedback. Rather than aiming for scale at the expense
 of quality, we chose to prioritize precision and relevance. By hand-picking the instances we deemed
 meaningful and representative, we ensured that the dataset would reflect true reviewer-author
@@ -643,7 +643,7 @@ The prompt used is as follows:
 	The comment refers to the part of the code identified by the special tag
 	\texttt{<commented\_line>}.\\
 	Each paraphrase should differ in length: include some extremely concise version of the comment,
-	some highly verbose version, and some that are roughly the same length—while always preserving
+	some highly verbose version, and some that are roughly the same length — while always preserving
 	the original meaning exactly.\\
 	\\
 	Generate the paraphrase (and nothing else) in the following format:\\
@@ -803,7 +803,7 @@ and (c) the coverage condition is satisfied.
 
 The improvements made between the two runs significantly enhanced the reliability of the dataset
 construction process. While the first run provided useful insights, such as the overall rate of PR
-failures and the effectiveness of the manual filtering. It primarily served as a proving ground for
+failures and the effectiveness of the manual filtering, it primarily served as a proving ground for
 iterating on the pipeline. Despite being limited to 398 repositories, it helped validate the
 extraction logic and informed adjustments to the coverage evaluation and PR validation mechanisms.
 

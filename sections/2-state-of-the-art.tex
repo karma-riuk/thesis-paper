@@ -72,8 +72,8 @@ Given a code snippet and its associated review, the goal is to find or generate 
 implementation that meets the requirements described in the review, which is
 often expressed in natural language.
 
-Tufano \etal \cite{tufano:icse2021} tackled the task from two prospectives: (i)
-generating the revised code only given the submitted code, \ie, without any
+Tufano \etal \cite{tufano:icse2021} tackled the task from two perspectives: (i)
+generating the revised code only given the submitted code, \ie without any
 input from the reviewer; (ii) generating the revised code with the specific
 goal of implementing the reviewers suggestion. They demonstrated feasibility of
 using deep learning to partially automate code reviews but also limitations,
@@ -307,9 +307,9 @@ Python and Ruby). In total, the dataset consists of approximately 7.9 million
 pull requests from 1,161 high-quality repositories. This multilingual dataset
 is not only extensive but also meticulously curated to ensure high-quality data
 for both pre-training and downstream evaluation. To have a more effective
-pre-training process, it was was divided into four steps: diff tag prediction,
+pre-training process, it was divided into four steps: diff tag prediction,
 denoising code diff, denoising review comments, and review comment generation.
-This was made enhance the model's capacity to understand and interact with the
+This was made to enhance the model's capacity to understand and interact with the
 unique structures of code diffs and reviews. The dataset formation involved
 extensive preprocessing to align code changes with corresponding review
 comments. Code changes were represented using the "diff hunk" format, which
