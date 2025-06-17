@@ -46,8 +46,8 @@
 Code review is an essential practice in software development, enhancing code
 quality and maintainability, but it can be resource-intensive and, as a consequence, expensive. To reduce these
 costs, researchers have developed code review automation tools that leverage
-deep learning models to assist with tasks such as code quality check and code
-refinement. Code quality check aims at generating reviewer-like comments that
+deep learning models to assist with tasks such as comment generation and code
+refinement. Comment generation aims at generating reviewer-like comments that
 point out potential issues in the code, while the code refinement task automatically generates
 an updated version of a given code implementing the reviewer suggestions.
 While these tools show great potential, assessing their effectiveness is far from trivial. 
@@ -60,17 +60,17 @@ clean the datasets, recent work revealed that problematic instances still make
 up a significant portion of the data. %As a result, evaluating models on such data does not accurately represent their true capabilities.
 To address these issues, we propose the first high-quality benchmark for
 code review automation. This benchmark consists of carefully curated
-\subCode, \revComment, \revCode triplets, where each comment will explicitly point out
 %'before-comment-after' triplets, where each comment will explicitly address a
+\subCode, \revComment, \revCode triplets, where each comment explicitly points out
 to an issue in the \subCode and is validated to ensure that the \revCode
 accurately implements the requested modification by implementing
 rigorous checks to confirm the relevance of comments and the correctness of code
-refinements. Also, the benchmark will account for the possibility that the same quality issue can be
+refinements. Also, the benchmark accounts for the possibility that the same quality issue can be
 expressed with different wording (important for the ``comment generation'' task) and that the same reviewer's comment can be addressed with semantically equivalent implementations (important for the ``code refinement'').
 %The triplets will be
 %classified based on the contextual information required to address the comment,
 %such as method-only, file-only, project-only or external-dependencies.
-Additionally, we will create a platform where users can submit model
+Additionally, we created a platform where users can submit model
 predictions and receive evaluations with our benchmark.%, setting a new standard for assessing code review tools. Our focus is on Java, with a goal of compiling 500 validated triplets.
 }
 
