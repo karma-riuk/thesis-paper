@@ -13,7 +13,7 @@
 
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
 \ProvidesClass{si-msc-proposal}[Software Institute Master %
-    Thesis Proposal class]
+	Thesis Proposal class]
 \LoadClass[a4paper,11pt]{article}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -39,7 +39,7 @@
 
 %%%
 \DeclareOption*{% 
-    \PassOptionsToClass{\CurrentOption}{document}% 
+	\PassOptionsToClass{\CurrentOption}{document}% 
 }
 %%% execution of options
 \ProcessOptions \relax
@@ -55,10 +55,10 @@
 \RequirePackage[scaled]{beramono}
 \renewcommand{\sfdefault}{uop}
 \renewcommand{\scshape}{%
-    \not@math@alphabet\scshape\relax
-    \ifthenelse{\equal{\f@family}{uop}}%
-    {\fontshape{sc}\selectfont}%
-    {\fontshape{fsc}\selectfont}%
+	\not@math@alphabet\scshape\relax
+	\ifthenelse{\equal{\f@family}{uop}}%
+	{\fontshape{sc}\selectfont}%
+	{\fontshape{fsc}\selectfont}%
 }
 
 %geometry
@@ -125,66 +125,66 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \renewcommand{\maketitle}{
-    \begin{titlepage}
-        \thispagestyle{empty}
+	\begin{titlepage}
+		\thispagestyle{empty}
 
-        %%% LOGO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		%%% LOGO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-        \hspace{-6.75mm}
-        \includegraphics[width=65mm]{Grid-System-USI-Software.pdf}
+		\hspace{-6.75mm}
+		\includegraphics[width=65mm]{Grid-System-USI-Software.pdf}
 
-        %%% DOCUMENT TYPE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		%%% DOCUMENT TYPE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-        \vspace{10mm}
-        \noindent {\large \textsc{Software \& Data Engineering Master Thesis Proposal}}
+		\vspace{10mm}
+		\noindent {\large \textsc{Software \& Data Engineering Master Thesis}}
 
-        %%% AUTHOR %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		%%% AUTHOR %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-        \vspace{10mm}
-        \noindent {\Large {\textbf{\@author}}}
+		\vspace{10mm}
+		\noindent {\Large {\textbf{\@author}}}
 
-        %%% TITLE (& OPTIONAL SUBTITLE) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		%%% TITLE (& OPTIONAL SUBTITLE) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-        \vspace{10mm}
-        \noindent {\Large {\textsc{\@title}}}
+		\vspace{10mm}
+		\noindent {\Large {\textsc{\@title}}}
 
-        \ifthenelse{\boolean{@subtitle}}
-        {\vspace{5mm} \noindent{\textsc{\@subtitle}}\vspace{10mm}}
-        {\vspace{20mm}}
+		\ifthenelse{\boolean{@subtitle}}
+		{\vspace{5mm} \noindent{\textsc{\@subtitle}}\vspace{10mm}}
+		{\vspace{20mm}}
 
-        %%% ABSTRACT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		%%% ABSTRACT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-        \hrule
-        \vspace{5mm}
-        \noindent {\textit{Abstract}}\\
-        \@abstract
-        \vfill
-        \hrule
+		\hrule
+		\vspace{5mm}
+		\noindent {\textit{Abstract}}\\
+		\@abstract
+		\vfill
+		\hrule
 
-        %%%%%%%%%%%%%%%%  ADVISOR AND ASSISTANT(S) %%%%%%%%%%%%%%%%
+		%%%%%%%%%%%%%%%%  ADVISOR AND ASSISTANT(S) %%%%%%%%%%%%%%%%
 
-        %\noindent\textsf{\textbf{Advisors}~} \\
-        %\DTLforeach*[\DTLiseq{\type}{r}]{committee}
-        %{\actitle=title,\first=first,\last=last,\type=type}{
-        %\hspace{-0.1cm}\textsf{\print@blank{\actitle}\first \ \last~}%
-        %}
-        %\ifthenelse{\value{coadvisors} > 0}{\hfill \textsf{\textbf{\\Co-advisor}\ifthenelse{\value{coadvisors} > 1}{\textsf{\textbf{s}}{}}}}{}\\
-        %\DTLforeach*[\DTLiseq{\type}{a}]{committee}%
-        %{\actitle=title,\first=first,\last=last,\type=type}{\DTLiffirstrow{}{, }\textsf{\print@blank{\actitle}\first \ \last}%
-        %}
+		%\noindent\textsf{\textbf{Advisors}~} \\
+		%\DTLforeach*[\DTLiseq{\type}{r}]{committee}
+		%{\actitle=title,\first=first,\last=last,\type=type}{
+		%\hspace{-0.1cm}\textsf{\print@blank{\actitle}\first \ \last~}%
+		%}
+		%\ifthenelse{\value{coadvisors} > 0}{\hfill \textsf{\textbf{\\Co-advisor}\ifthenelse{\value{coadvisors} > 1}{\textsf{\textbf{s}}{}}}}{}\\
+		%\DTLforeach*[\DTLiseq{\type}{a}]{committee}%
+		%{\actitle=title,\first=first,\last=last,\type=type}{\DTLiffirstrow{}{, }\textsf{\print@blank{\actitle}\first \ \last}%
+		%}
 
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    \end{titlepage}
+	\end{titlepage}
 
-    \setcounter{footnote}{0}
+	\setcounter{footnote}{0}
 }
 
 \renewenvironment{titlepage}
 {%
-    \cleardoublepage
-    \pagenumbering{arabic}
-    \setcounter{page}\z@
+	\cleardoublepage
+	\pagenumbering{arabic}
+	\setcounter{page}\z@
 }%
 {\newpage }
 {\textwidth 5cm}
