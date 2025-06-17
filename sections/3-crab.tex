@@ -10,8 +10,6 @@ independently.
 
 \subsection{Overview}
 
-\textcolor{blue}{Se hai tempo e voglia potresti fare qui uno schemino che faccia vedere ad alto livello un po' tutto il processo di costruzione dei benchmark come overview.}
-
 In this section, we describe the construction of a high-quality dataset of code review triplets,
 each composed of some \subCode, a \revComment, and some \revCode. The dataset is designed to support
 two complementary benchmarks, each targeting a different task: comment generation and code
@@ -19,6 +17,23 @@ refinement. The comment generation task asks a model to generate a \revComment t
 issues and suggests improvements, given a \subCode. The code refinement task instead takes both the
 \subCode and the \revComment as input and requires the model to produce a \revCode that correctly
 implements the suggested change.
+
+\begin{figure}[!htbp]
+	\centering
+	\includegraphics[width=\textwidth]{overview.png}
+	\caption{Overview of the data construction pipeline.}
+	\label{fig:overview}
+\end{figure}
+
+Figure~\ref{fig:overview} illustrates the high-level structure of our dataset construction pipeline.
+Starting from a filtered list of GitHub repositories, we extracted 1'704 pull requests containing
+exactly one review comment (with optional reply from the author of the PR) and a corresponding code
+revision. Each comment was paraphrased using ChatGPT to generate diverse phrasings, yielding 894
+entries for the comment generation benchmark. A subset of these (57 entries) also passed all build,
+test, and coverage checks, making them eligible for the code refinement benchmark. These refinement
+candidates were manually curated to isolate only the changes relevant to the review comment. This
+diagram complements the following sections by providing a concrete snapshot of the data flow and
+benchmark construction process.
 
 A key design decision is that every included \revComment must explicitly suggest a meaningful
 modification to the code. As a result, all triplets are valid instances for the comment generation
